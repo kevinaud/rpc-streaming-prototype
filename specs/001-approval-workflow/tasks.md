@@ -22,12 +22,12 @@
 
 ### Git Setup for PR #1
 
-- [ ] T001 Sync main branch: `git checkout main && git pull origin main`
-- [ ] T002 Create feature branch: `git checkout -b pr1-environment-updates`
+- [x] T001 Sync main branch: `git checkout main && git pull origin main`
+- [x] T002 Create feature branch: `git checkout -b pr1-environment-updates`
 
 ### Dockerfile Updates [PR1]
 
-- [ ] T003 [PR1] Rewrite .devcontainer/Dockerfile with Backup-Restore pattern:
+- [x] T003 [PR1] Rewrite .devcontainer/Dockerfile with Backup-Restore pattern:
   - Add `COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv`
   - Set `ENV UV_LINK_MODE=copy` and `ENV UV_CACHE_DIR=/opt/uv-cache`
   - Install Node.js and npm via apt-get
@@ -39,7 +39,7 @@
 
 ### Initialization Script [PR1]
 
-- [ ] T004 [PR1] Create .devcontainer/init.sh with restore logic:
+- [x] T004 [PR1] Create .devcontainer/init.sh with restore logic:
   - Check if node_modules exists/empty → restore from /opt/backup
   - Run `npm install` to catch drift
   - Run `uv sync` to sync Python environment
@@ -47,7 +47,7 @@
 
 ### DevContainer Configuration [PR1]
 
-- [ ] T005 [P] [PR1] Update .devcontainer/devcontainer.json:
+- [x] T005 [P] [PR1] Update .devcontainer/devcontainer.json:
   - Add docker-in-docker feature: `"ghcr.io/devcontainers/features/docker-in-docker:2": {"enableNonRootDocker": "true"}`
   - Remove Node.js devcontainer feature (installed in Dockerfile)
   - Set `"postCreateCommand": "bash .devcontainer/init.sh"`
@@ -57,22 +57,22 @@
 
 ### Python Dependencies [PR1]
 
-- [ ] T006 [P] [PR1] Add betterproto[compiler] and grpclib to pyproject.toml dev dependencies
-- [ ] T007 [PR1] Run `uv lock` to update uv.lock with new dependencies
+- [x] T006 [P] [PR1] Add betterproto[compiler] and grpclib to pyproject.toml dev dependencies
+- [x] T007 [PR1] Run `uv lock` to update uv.lock with new dependencies
 
 ### Node Dependencies [PR1]
 
-- [ ] T008 [PR1] Create root package.json with Angular CLI as devDependency
-- [ ] T009 [PR1] Run `npm install` to generate package-lock.json
+- [x] T008 [PR1] Create root package.json with Angular CLI as devDependency
+- [x] T009 [PR1] Run `npm install` to generate package-lock.json
 
 ### CI Workflows [PR1]
 
-- [ ] T010 [P] [PR1] Create .github/workflows/build-image.yaml (The Builder):
+- [x] T010 [P] [PR1] Create .github/workflows/build-image.yaml (The Builder):
   - Trigger on push to main with paths: .devcontainer/**, pyproject.toml, uv.lock, package.json, package-lock.json
   - Login to GHCR
   - Use devcontainers/ci@v0.3 with `push: always`
 
-- [ ] T011 [P] [PR1] Update .github/workflows/ci.yaml (The Runner):
+- [x] T011 [P] [PR1] Update .github/workflows/ci.yaml (The Runner):
   - Trigger on push/PR to main (all paths)
   - Login to GHCR
   - Use devcontainers/ci@v0.3 with `push: never`
@@ -80,27 +80,27 @@
 
 ### Cleanup [PR1]
 
-- [ ] T012 [PR1] Remove .devcontainer/setup-env.sh (replaced by init.sh)
-- [ ] T013 [PR1] Remove .devcontainer/post-start.sh (if exists and not needed)
-- [ ] T014 [PR1] Remove obsolete mounts (gh_token_file if not needed)
+- [x] T012 [PR1] Remove .devcontainer/setup-env.sh (replaced by init.sh)
+- [x] T013 [PR1] Remove .devcontainer/post-start.sh (if exists and not needed)
+- [x] T014 [PR1] Remove obsolete mounts (gh_token_file if not needed)
 
 ### Verification for PR #1
 
 - [ ] T015 [PR1] Verify devcontainer builds successfully: rebuild container
-- [ ] T016 [PR1] Run `./scripts/check_quality.sh` - must pass
+- [x] T016 [PR1] Run `./scripts/check_quality.sh` - must pass
 - [ ] T017 [PR1] Verify `docker compose version` works (DinD enabled)
-- [ ] T018 [PR1] Verify `node --version` shows Node.js installed
-- [ ] T019 [PR1] Verify `ng version` shows Angular CLI installed
-- [ ] T020 [PR1] Verify `python -c "import betterproto"` succeeds
-- [ ] T021 [PR1] Verify `python -c "import grpclib"` succeeds
+- [x] T018 [PR1] Verify `node --version` shows Node.js installed
+- [x] T019 [PR1] Verify `ng version` shows Angular CLI installed
+- [x] T020 [PR1] Verify `python -c "import betterproto"` succeeds
+- [x] T021 [PR1] Verify `python -c "import grpclib"` succeeds
 - [ ] T022 [PR1] Verify node_modules restored after rebuild (check init.sh ran)
 - [ ] T023 [PR1] Verify uv-cache volume exists: `docker volume ls | grep uv-cache`
 
 ### Git Workflow for PR #1
 
-- [ ] T024 Push branch and create PR: `git push -u origin pr1-environment-updates && gh pr create --title "PR #1: Environment Updates" --body "Implements Backup-Restore pattern for deps, Split CI workflows (Builder + Runner)"`
-- [ ] T025 Monitor CI checks: `gh pr checks --watch`
-- [ ] T026 Address any CI failures until checks pass
+- [x] T024 Push branch and create PR: `git push -u origin pr1-environment-updates && gh pr create --title "PR #1: Environment Updates" --body "Implements Backup-Restore pattern for deps, Split CI workflows (Builder + Runner)"`
+- [x] T025 Monitor CI checks: `gh pr checks --watch`
+- [x] T026 Address any CI failures until checks pass
 - [ ] T027 **STOP**: Ask user to review PR #1
 - [ ] T028 Squash merge after approval: `gh pr merge --squash --delete-branch`
 

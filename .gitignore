@@ -11,3 +11,13 @@ dist/
 build/
 *.egg-info/
 .DS_Store
+
+# Node.js
+node_modules/
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+*.swp
+*.swo

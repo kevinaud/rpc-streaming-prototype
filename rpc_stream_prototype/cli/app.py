@@ -19,7 +19,7 @@ def get_logger() -> FilteringBoundLogger:
 
 
 app = typer.Typer(
-  help="Proto-type of shared session communication using gRPC streaming across two clients",
+  help="Proto-type of shared session communication using gRPC streaming",
   no_args_is_help=True,
 )
 
