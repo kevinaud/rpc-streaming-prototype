@@ -1,18 +1,51 @@
 FROM mcr.microsoft.com/devcontainers/python:3.14
 
-# Install uv for dependency management during build
-RUN pip install uv
+# ============================================================
+# Backup-Restore Pattern for Dev Container Dependencies
+# ============================================================
+# - Dependencies are installed at build time for caching
+# - node_modules is backed up to /opt/backup (survives mount)
+# - init.sh restores from backup after workspace mount
+# ============================================================
 
-# Copy dependency files for caching
-# Using uv.loc* pattern so COPY doesn't fail if uv.lock doesn't exist
+# Install uv from official image (faster, always up-to-date)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+
+# Configure uv for optimal caching
+ENV UV_LINK_MODE=copy
+ENV UV_CACHE_DIR=/opt/uv-cache
+
+# Install Node.js and npm via apt-get (instead of devcontainer feature)
+RUN apt-get update && apt-get install -y \
+    nodejs \
+    npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Angular CLI globally for workspace tooling
+RUN npm install -g @angular/cli
+
+# Create backup directory for node_modules
+RUN mkdir -p /opt/backup
+
+# Set working directory for dependency installation
+WORKDIR /workspace
+
+# Copy lockfiles first for dependency layer caching
 COPY pyproject.toml uv.loc* ./
+COPY package.json package-lock.jso* ./
 
-# Install dependencies only (not the local project, since source isn't in container yet)
-# The local project will be installed when the workspace is mounted
-# Use --frozen only if lock file exists and is not empty, otherwise generate it
+# Install Python dependencies (frozen if lock exists)
 RUN if [ -s uv.lock ]; then \
       uv sync --frozen --no-install-project; \
     else \
       uv sync --no-install-project; \
     fi
 
+# Install Node dependencies and backup for restore after mount
+RUN if [ -s package.json ]; then \
+      npm install && cp -r node_modules /opt/backup/node_modules; \
+    fi
+
+# Copy full project for CI builds (dev container mounts over this)
+COPY . .

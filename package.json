@@ -1,0 +1,12 @@
+{
+  "name": "rpc-stream-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Proto-type of shared session communication using gRPC streaming across two clients",
+  "devDependencies": {
+    "@angular/cli": "^19.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

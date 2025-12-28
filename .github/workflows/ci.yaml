@@ -1,5 +1,12 @@
 name: CI
 
+# ============================================================
+# The Runner: Triggers on all pushes and PRs to main
+# ============================================================
+# Runs quality checks and tests using the cached dev container
+# image from GHCR. Never pushes images (that's build-image.yaml's job).
+# ============================================================
+
 on:
   push:
     branches: [main]
@@ -12,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      packages: read
 
     steps:
       - name: Checkout code
@@ -30,11 +37,10 @@ jobs:
         with:
           imageName: ghcr.io/${{ github.repository }}/devcontainer
           cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
-          push: filter
+          push: never
           runCmd: |
             # Run Quality Checks
             ./scripts/check_quality.sh
             
             # Run Unit and Integration Tests (sequential - async tests need single event loop)
             uv run pytest tests/unit tests/integration -v
-            
