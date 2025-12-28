@@ -27,10 +27,13 @@ dev = [
     "specify-cli>=1.0.0",
     "betterproto[compiler]>=2.0.0b7",
     "grpclib>=0.4.7",
+    "grpcio-tools>=1.60.0",
+    "watchfiles>=1.0.0",
 ]
 
 [project.scripts]
-rpc-stream-prototype = "rpc_stream_prototype.cli.app:app"
+rpc-server = "rpc_stream_prototype.backend.main:main"
+rpc-cli = "rpc_stream_prototype.cli.main:app"
 
 [tool.setuptools]
 packages = ["rpc_stream_prototype"]
@@ -49,6 +52,7 @@ select = ["E", "F", "I"]
 pythonVersion = "3.14"
 typeCheckingMode = "strict"
 useLibraryCodeForTypes = true
+exclude = ["**/generated/**", "**/node_modules/**", "frontend/**", "**/.venv/**"]
 reportPrivateImportUsage = false
 reportMissingTypeStubs = false
 reportUnknownParameterType = false

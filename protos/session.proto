@@ -1,0 +1,14 @@
+syntax = "proto3";
+package approval.v1;
+import "approval_request.proto";
+
+message Session {
+  string session_id = 1;
+}
+
+message SessionEvent {
+  oneof event {
+    ApprovalRequest request_created = 1;
+    ApprovalRequest request_updated = 2;
+  }
+}

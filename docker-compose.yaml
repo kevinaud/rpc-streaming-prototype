@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./rpc_stream_prototype:/app/rpc_stream_prototype:cached
+      - ./logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+      - LOG_FILE=/app/logs/coordination-service.log
+    command: >
+      uv run watchfiles
+      --filter python
+      "python -m rpc_stream_prototype.backend.main"
+      /app/rpc_stream_prototype
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend.Dockerfile
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app:cached
+      - /app/node_modules
+    command: npx ng serve --host 0.0.0.0 --poll 2000
+
+  envoy:
+    image: envoyproxy/envoy:v1.26-latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
+    depends_on:
+      - backend

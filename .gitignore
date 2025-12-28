@@ -21,3 +21,13 @@ npm-debug.log*
 .idea/
 *.swp
 *.swo
+
+# Generated code (regenerated from protos)
+rpc_stream_prototype/generated/
+
+# Logs (keep directory structure via logs/.gitkeep)
+logs/*.log
+
+# Angular build output
+frontend/dist/
+frontend/.angular/

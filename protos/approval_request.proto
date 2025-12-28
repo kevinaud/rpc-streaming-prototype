@@ -1,0 +1,17 @@
+syntax = "proto3";
+package approval.v1;
+import "google/protobuf/timestamp.proto";
+
+enum RequestStatus {
+  STATUS_UNSPECIFIED = 0;
+  PENDING = 1;
+  APPROVED = 2;
+  REJECTED = 3;
+}
+
+message ApprovalRequest {
+  string request_id = 1;
+  string text = 2;
+  RequestStatus status = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
