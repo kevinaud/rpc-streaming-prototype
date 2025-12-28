@@ -120,10 +120,10 @@ As an Approver, I want to reconnect to an existing session so that I can resume 
 
 ### Functional Requirements
 
-**Coordination Service:**
+**Coordination Service (Backend):**
 - **FR-001**: Service MUST generate unique Session IDs using UUID format
 - **FR-002**: Service MUST maintain session state entirely in-memory during runtime
-- **FR-003**: Service MUST support real-time bidirectional message passing between connected clients
+- **FR-003**: Service MUST support real-time server-to-client streaming for pushing updates, combined with unary client-to-server RPCs for actions (Watch pattern)
 - **FR-004**: Service MUST relay requests from Requester to Approver without polling
 - **FR-005**: Service MUST relay decisions from Approver to Requester without polling
 - **FR-006**: Service MUST persist session history (requests and decisions) for the session's lifetime
@@ -190,6 +190,16 @@ The following are explicitly excluded from this prototype:
 - Q: What level of logging should the Coordination Service provide? → A: Info-level to stdout (terminal), verbose-level to log file
 - Q: How should concurrent request submissions from multiple Requesters be handled? → A: Queue requests; Approver processes them sequentially (FIFO)
 - Q: How should the Web UI behave when it loses connection to the Coordination Service? → A: Display connection-lost indicator; auto-reconnect with visual feedback
+
+## Terminology
+
+| Term | Context | Notes |
+|------|---------|-------|
+| Coordination Service | User-facing documentation | The backend server that coordinates approval workflows |
+| Backend | Code artifacts, Docker | Python gRPC server implementation (`rpc_stream_prototype/backend/`) |
+| Session ID | Documentation | User-visible identifier for a session |
+| `session_id` | Python code | Snake_case variable/field name |
+| `sessionId` | TypeScript code | CamelCase variable/field name |
 
 ## Assumptions
 
