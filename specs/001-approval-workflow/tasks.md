@@ -89,18 +89,18 @@
 - [ ] T015 [PR1] Verify devcontainer builds successfully: rebuild container
 - [x] T016 [PR1] Run `./scripts/check_quality.sh` - must pass
 - [ ] T017 [PR1] Verify `docker compose version` works (DinD enabled)
-- [ ] T018 [PR1] Verify `node --version` shows Node.js installed
-- [ ] T019 [PR1] Verify `ng version` shows Angular CLI installed
-- [ ] T020 [PR1] Verify `python -c "import betterproto"` succeeds
-- [ ] T021 [PR1] Verify `python -c "import grpclib"` succeeds
+- [x] T018 [PR1] Verify `node --version` shows Node.js installed
+- [x] T019 [PR1] Verify `ng version` shows Angular CLI installed
+- [x] T020 [PR1] Verify `python -c "import betterproto"` succeeds
+- [x] T021 [PR1] Verify `python -c "import grpclib"` succeeds
 - [ ] T022 [PR1] Verify node_modules restored after rebuild (check init.sh ran)
 - [ ] T023 [PR1] Verify uv-cache volume exists: `docker volume ls | grep uv-cache`
 
 ### Git Workflow for PR #1
 
-- [ ] T024 Push branch and create PR: `git push -u origin pr1-environment-updates && gh pr create --title "PR #1: Environment Updates" --body "Implements Backup-Restore pattern for deps, Split CI workflows (Builder + Runner)"`
-- [ ] T025 Monitor CI checks: `gh pr checks --watch`
-- [ ] T026 Address any CI failures until checks pass
+- [x] T024 Push branch and create PR: `git push -u origin pr1-environment-updates && gh pr create --title "PR #1: Environment Updates" --body "Implements Backup-Restore pattern for deps, Split CI workflows (Builder + Runner)"`
+- [x] T025 Monitor CI checks: `gh pr checks --watch`
+- [x] T026 Address any CI failures until checks pass
 - [ ] T027 **STOP**: Ask user to review PR #1
 - [ ] T028 Squash merge after approval: `gh pr merge --squash --delete-branch`
 
