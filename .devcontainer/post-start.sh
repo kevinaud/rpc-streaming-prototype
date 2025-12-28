@@ -14,7 +14,7 @@
 # ------------------------------------------------------------
 if [ -s /tmp/.gh_token_file ]; then
     echo "🔑 Auto-logging into GitHub CLI..."
-    cat /tmp/.gh_token_file | gh auth login --with-token
+    gh auth login --with-token < /tmp/.gh_token_file
     echo "✅ GitHub CLI authenticated"
 else
     echo "⚠️  No GitHub token found at /tmp/.gh_token_file"
