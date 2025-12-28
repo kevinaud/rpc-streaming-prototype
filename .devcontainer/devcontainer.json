@@ -6,7 +6,8 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "enableNonRootDocker": "true"
+      "enableNonRootDocker": "true",
+      "moby": false
     },
     "ghcr.io/devcontainers-extra/features/uv:1": {},
     "ghcr.io/devcontainers-extra/features/prettier:1": {},
