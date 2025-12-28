@@ -49,6 +49,11 @@
   // Forward common development ports
   "forwardPorts": [4200, 8080, 50051],
 
-  // Single init script replaces postCreate + postStart
-  "postCreateCommand": "bash .devcontainer/init.sh"
+  // postCreateCommand: Runs once after container is created
+  // - Restores dependencies from backup after workspace mount
+  "postCreateCommand": "bash .devcontainer/init.sh",
+
+  // postStartCommand: Runs every time the container starts
+  // - GitHub CLI login (requires bind mount to be available)
+  "postStartCommand": "bash .devcontainer/post-start.sh"
 }
