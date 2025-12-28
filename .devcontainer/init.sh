@@ -11,6 +11,17 @@ set -e
 echo "🚀 Initializing dev container..."
 
 # ------------------------------------------------------------
+# Fix uv-cache permissions (for CI runner compatibility)
+# ------------------------------------------------------------
+if [ -d "/opt/uv-cache" ]; then
+    # Ensure current user can write to uv-cache
+    if [ ! -w "/opt/uv-cache" ]; then
+        echo "🔧 Fixing uv-cache permissions..."
+        sudo chown -R "$(id -u):$(id -g)" /opt/uv-cache 2>/dev/null || true
+    fi
+fi
+
+# ------------------------------------------------------------
 # Node.js Dependencies: Restore from backup
 # ------------------------------------------------------------
 if [ -d "/opt/backup/node_modules" ]; then
