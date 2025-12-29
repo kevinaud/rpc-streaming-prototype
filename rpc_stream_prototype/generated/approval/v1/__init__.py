@@ -6,260 +6,258 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import (
-    TYPE_CHECKING,
-    AsyncIterator,
-    Dict,
-    Optional,
+  TYPE_CHECKING,
+  AsyncIterator,
+  Dict,
+  Optional,
 )
 
 import betterproto
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
 
-
 if TYPE_CHECKING:
-    import grpclib.server
-    from betterproto.grpc.grpclib_client import MetadataLike
-    from grpclib.metadata import Deadline
+  import grpclib.server
+  from betterproto.grpc.grpclib_client import MetadataLike
+  from grpclib.metadata import Deadline
 
 
 class RequestStatus(betterproto.Enum):
-    STATUS_UNSPECIFIED = 0
-    PENDING = 1
-    APPROVED = 2
-    REJECTED = 3
+  STATUS_UNSPECIFIED = 0
+  PENDING = 1
+  APPROVED = 2
+  REJECTED = 3
 
 
 @dataclass(eq=False, repr=False)
 class ApprovalRequest(betterproto.Message):
-    request_id: str = betterproto.string_field(1)
-    text: str = betterproto.string_field(2)
-    status: "RequestStatus" = betterproto.enum_field(3)
-    created_at: datetime = betterproto.message_field(4)
+  request_id: str = betterproto.string_field(1)
+  text: str = betterproto.string_field(2)
+  status: "RequestStatus" = betterproto.enum_field(3)
+  created_at: datetime = betterproto.message_field(4)
 
 
 @dataclass(eq=False, repr=False)
 class Session(betterproto.Message):
-    session_id: str = betterproto.string_field(1)
+  session_id: str = betterproto.string_field(1)
 
 
 @dataclass(eq=False, repr=False)
 class SessionEvent(betterproto.Message):
-    request_created: "ApprovalRequest" = betterproto.message_field(1, group="event")
-    request_updated: "ApprovalRequest" = betterproto.message_field(2, group="event")
+  request_created: "ApprovalRequest" = betterproto.message_field(1, group="event")
+  request_updated: "ApprovalRequest" = betterproto.message_field(2, group="event")
 
 
 @dataclass(eq=False, repr=False)
 class CreateSessionRequest(betterproto.Message):
-    pass
+  pass
 
 
 @dataclass(eq=False, repr=False)
 class GetSessionRequest(betterproto.Message):
-    session_id: str = betterproto.string_field(1)
+  session_id: str = betterproto.string_field(1)
 
 
 @dataclass(eq=False, repr=False)
 class SubscribeRequest(betterproto.Message):
-    session_id: str = betterproto.string_field(1)
-    client_id: str = betterproto.string_field(2)
+  session_id: str = betterproto.string_field(1)
+  client_id: str = betterproto.string_field(2)
 
 
 @dataclass(eq=False, repr=False)
 class SubmitRequestPayload(betterproto.Message):
-    session_id: str = betterproto.string_field(1)
-    text: str = betterproto.string_field(2)
+  session_id: str = betterproto.string_field(1)
+  text: str = betterproto.string_field(2)
 
 
 @dataclass(eq=False, repr=False)
 class SubmitDecisionPayload(betterproto.Message):
-    session_id: str = betterproto.string_field(1)
-    request_id: str = betterproto.string_field(2)
-    approved: bool = betterproto.bool_field(3)
+  session_id: str = betterproto.string_field(1)
+  request_id: str = betterproto.string_field(2)
+  approved: bool = betterproto.bool_field(3)
 
 
 class ApprovalServiceStub(betterproto.ServiceStub):
-    async def create_session(
-        self,
-        create_session_request: "CreateSessionRequest",
-        *,
-        timeout: Optional[float] = None,
-        deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
-    ) -> "Session":
-        return await self._unary_unary(
-            "/approval.v1.ApprovalService/CreateSession",
-            create_session_request,
-            Session,
-            timeout=timeout,
-            deadline=deadline,
-            metadata=metadata,
-        )
+  async def create_session(
+    self,
+    create_session_request: "CreateSessionRequest",
+    *,
+    timeout: Optional[float] = None,
+    deadline: Optional["Deadline"] = None,
+    metadata: Optional["MetadataLike"] = None,
+  ) -> "Session":
+    return await self._unary_unary(
+      "/approval.v1.ApprovalService/CreateSession",
+      create_session_request,
+      Session,
+      timeout=timeout,
+      deadline=deadline,
+      metadata=metadata,
+    )
 
-    async def get_session(
-        self,
-        get_session_request: "GetSessionRequest",
-        *,
-        timeout: Optional[float] = None,
-        deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
-    ) -> "Session":
-        return await self._unary_unary(
-            "/approval.v1.ApprovalService/GetSession",
-            get_session_request,
-            Session,
-            timeout=timeout,
-            deadline=deadline,
-            metadata=metadata,
-        )
+  async def get_session(
+    self,
+    get_session_request: "GetSessionRequest",
+    *,
+    timeout: Optional[float] = None,
+    deadline: Optional["Deadline"] = None,
+    metadata: Optional["MetadataLike"] = None,
+  ) -> "Session":
+    return await self._unary_unary(
+      "/approval.v1.ApprovalService/GetSession",
+      get_session_request,
+      Session,
+      timeout=timeout,
+      deadline=deadline,
+      metadata=metadata,
+    )
 
-    async def subscribe(
-        self,
-        subscribe_request: "SubscribeRequest",
-        *,
-        timeout: Optional[float] = None,
-        deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
-    ) -> AsyncIterator[SessionEvent]:
-        async for response in self._unary_stream(
-            "/approval.v1.ApprovalService/Subscribe",
-            subscribe_request,
-            SessionEvent,
-            timeout=timeout,
-            deadline=deadline,
-            metadata=metadata,
-        ):
-            yield response
+  async def subscribe(
+    self,
+    subscribe_request: "SubscribeRequest",
+    *,
+    timeout: Optional[float] = None,
+    deadline: Optional["Deadline"] = None,
+    metadata: Optional["MetadataLike"] = None,
+  ) -> AsyncIterator[SessionEvent]:
+    async for response in self._unary_stream(
+      "/approval.v1.ApprovalService/Subscribe",
+      subscribe_request,
+      SessionEvent,
+      timeout=timeout,
+      deadline=deadline,
+      metadata=metadata,
+    ):
+      yield response
 
-    async def submit_request(
-        self,
-        submit_request_payload: "SubmitRequestPayload",
-        *,
-        timeout: Optional[float] = None,
-        deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
-    ) -> "ApprovalRequest":
-        return await self._unary_unary(
-            "/approval.v1.ApprovalService/SubmitRequest",
-            submit_request_payload,
-            ApprovalRequest,
-            timeout=timeout,
-            deadline=deadline,
-            metadata=metadata,
-        )
+  async def submit_request(
+    self,
+    submit_request_payload: "SubmitRequestPayload",
+    *,
+    timeout: Optional[float] = None,
+    deadline: Optional["Deadline"] = None,
+    metadata: Optional["MetadataLike"] = None,
+  ) -> "ApprovalRequest":
+    return await self._unary_unary(
+      "/approval.v1.ApprovalService/SubmitRequest",
+      submit_request_payload,
+      ApprovalRequest,
+      timeout=timeout,
+      deadline=deadline,
+      metadata=metadata,
+    )
 
-    async def submit_decision(
-        self,
-        submit_decision_payload: "SubmitDecisionPayload",
-        *,
-        timeout: Optional[float] = None,
-        deadline: Optional["Deadline"] = None,
-        metadata: Optional["MetadataLike"] = None
-    ) -> "ApprovalRequest":
-        return await self._unary_unary(
-            "/approval.v1.ApprovalService/SubmitDecision",
-            submit_decision_payload,
-            ApprovalRequest,
-            timeout=timeout,
-            deadline=deadline,
-            metadata=metadata,
-        )
+  async def submit_decision(
+    self,
+    submit_decision_payload: "SubmitDecisionPayload",
+    *,
+    timeout: Optional[float] = None,
+    deadline: Optional["Deadline"] = None,
+    metadata: Optional["MetadataLike"] = None,
+  ) -> "ApprovalRequest":
+    return await self._unary_unary(
+      "/approval.v1.ApprovalService/SubmitDecision",
+      submit_decision_payload,
+      ApprovalRequest,
+      timeout=timeout,
+      deadline=deadline,
+      metadata=metadata,
+    )
 
 
 class ApprovalServiceBase(ServiceBase):
+  async def create_session(
+    self, create_session_request: "CreateSessionRequest"
+  ) -> "Session":
+    raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def create_session(
-        self, create_session_request: "CreateSessionRequest"
-    ) -> "Session":
-        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+  async def get_session(self, get_session_request: "GetSessionRequest") -> "Session":
+    raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_session(self, get_session_request: "GetSessionRequest") -> "Session":
-        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+  async def subscribe(
+    self, subscribe_request: "SubscribeRequest"
+  ) -> AsyncIterator[SessionEvent]:
+    raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+    yield SessionEvent()
 
-    async def subscribe(
-        self, subscribe_request: "SubscribeRequest"
-    ) -> AsyncIterator[SessionEvent]:
-        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
-        yield SessionEvent()
+  async def submit_request(
+    self, submit_request_payload: "SubmitRequestPayload"
+  ) -> "ApprovalRequest":
+    raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def submit_request(
-        self, submit_request_payload: "SubmitRequestPayload"
-    ) -> "ApprovalRequest":
-        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+  async def submit_decision(
+    self, submit_decision_payload: "SubmitDecisionPayload"
+  ) -> "ApprovalRequest":
+    raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def submit_decision(
-        self, submit_decision_payload: "SubmitDecisionPayload"
-    ) -> "ApprovalRequest":
-        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+  async def __rpc_create_session(
+    self, stream: "grpclib.server.Stream[CreateSessionRequest, Session]"
+  ) -> None:
+    request = await stream.recv_message()
+    response = await self.create_session(request)
+    await stream.send_message(response)
 
-    async def __rpc_create_session(
-        self, stream: "grpclib.server.Stream[CreateSessionRequest, Session]"
-    ) -> None:
-        request = await stream.recv_message()
-        response = await self.create_session(request)
-        await stream.send_message(response)
+  async def __rpc_get_session(
+    self, stream: "grpclib.server.Stream[GetSessionRequest, Session]"
+  ) -> None:
+    request = await stream.recv_message()
+    response = await self.get_session(request)
+    await stream.send_message(response)
 
-    async def __rpc_get_session(
-        self, stream: "grpclib.server.Stream[GetSessionRequest, Session]"
-    ) -> None:
-        request = await stream.recv_message()
-        response = await self.get_session(request)
-        await stream.send_message(response)
+  async def __rpc_subscribe(
+    self, stream: "grpclib.server.Stream[SubscribeRequest, SessionEvent]"
+  ) -> None:
+    request = await stream.recv_message()
+    await self._call_rpc_handler_server_stream(
+      self.subscribe,
+      stream,
+      request,
+    )
 
-    async def __rpc_subscribe(
-        self, stream: "grpclib.server.Stream[SubscribeRequest, SessionEvent]"
-    ) -> None:
-        request = await stream.recv_message()
-        await self._call_rpc_handler_server_stream(
-            self.subscribe,
-            stream,
-            request,
-        )
+  async def __rpc_submit_request(
+    self, stream: "grpclib.server.Stream[SubmitRequestPayload, ApprovalRequest]"
+  ) -> None:
+    request = await stream.recv_message()
+    response = await self.submit_request(request)
+    await stream.send_message(response)
 
-    async def __rpc_submit_request(
-        self, stream: "grpclib.server.Stream[SubmitRequestPayload, ApprovalRequest]"
-    ) -> None:
-        request = await stream.recv_message()
-        response = await self.submit_request(request)
-        await stream.send_message(response)
+  async def __rpc_submit_decision(
+    self, stream: "grpclib.server.Stream[SubmitDecisionPayload, ApprovalRequest]"
+  ) -> None:
+    request = await stream.recv_message()
+    response = await self.submit_decision(request)
+    await stream.send_message(response)
 
-    async def __rpc_submit_decision(
-        self, stream: "grpclib.server.Stream[SubmitDecisionPayload, ApprovalRequest]"
-    ) -> None:
-        request = await stream.recv_message()
-        response = await self.submit_decision(request)
-        await stream.send_message(response)
-
-    def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
-        return {
-            "/approval.v1.ApprovalService/CreateSession": grpclib.const.Handler(
-                self.__rpc_create_session,
-                grpclib.const.Cardinality.UNARY_UNARY,
-                CreateSessionRequest,
-                Session,
-            ),
-            "/approval.v1.ApprovalService/GetSession": grpclib.const.Handler(
-                self.__rpc_get_session,
-                grpclib.const.Cardinality.UNARY_UNARY,
-                GetSessionRequest,
-                Session,
-            ),
-            "/approval.v1.ApprovalService/Subscribe": grpclib.const.Handler(
-                self.__rpc_subscribe,
-                grpclib.const.Cardinality.UNARY_STREAM,
-                SubscribeRequest,
-                SessionEvent,
-            ),
-            "/approval.v1.ApprovalService/SubmitRequest": grpclib.const.Handler(
-                self.__rpc_submit_request,
-                grpclib.const.Cardinality.UNARY_UNARY,
-                SubmitRequestPayload,
-                ApprovalRequest,
-            ),
-            "/approval.v1.ApprovalService/SubmitDecision": grpclib.const.Handler(
-                self.__rpc_submit_decision,
-                grpclib.const.Cardinality.UNARY_UNARY,
-                SubmitDecisionPayload,
-                ApprovalRequest,
-            ),
-        }
+  def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
+    return {
+      "/approval.v1.ApprovalService/CreateSession": grpclib.const.Handler(
+        self.__rpc_create_session,
+        grpclib.const.Cardinality.UNARY_UNARY,
+        CreateSessionRequest,
+        Session,
+      ),
+      "/approval.v1.ApprovalService/GetSession": grpclib.const.Handler(
+        self.__rpc_get_session,
+        grpclib.const.Cardinality.UNARY_UNARY,
+        GetSessionRequest,
+        Session,
+      ),
+      "/approval.v1.ApprovalService/Subscribe": grpclib.const.Handler(
+        self.__rpc_subscribe,
+        grpclib.const.Cardinality.UNARY_STREAM,
+        SubscribeRequest,
+        SessionEvent,
+      ),
+      "/approval.v1.ApprovalService/SubmitRequest": grpclib.const.Handler(
+        self.__rpc_submit_request,
+        grpclib.const.Cardinality.UNARY_UNARY,
+        SubmitRequestPayload,
+        ApprovalRequest,
+      ),
+      "/approval.v1.ApprovalService/SubmitDecision": grpclib.const.Handler(
+        self.__rpc_submit_decision,
+        grpclib.const.Cardinality.UNARY_UNARY,
+        SubmitDecisionPayload,
+        ApprovalRequest,
+      ),
+    }

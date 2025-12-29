@@ -23,5 +23,10 @@ uv run python -m grpc_tools.protoc \
 # Create root __init__.py
 touch "$PYTHON_OUT/__init__.py"
 
+# Format generated code
+echo "🎨 Formatting generated code..."
+uv run ruff check --fix "$PYTHON_OUT" || true
+uv run ruff format "$PYTHON_OUT"
+
 echo "✅ Proto generation complete: $PYTHON_OUT"
 echo "📦 Generated package: rpc_stream_prototype.generated.approval.v1"
