@@ -31,7 +31,7 @@ yarn-error.log
 .history/
 
 # Generated code (regenerated from protos)
-rpc_stream_prototype/generated/
+# rpc_stream_prototype/generated/
 
 # Logs (keep directory structure via logs/.gitkeep)
 logs/*.log
