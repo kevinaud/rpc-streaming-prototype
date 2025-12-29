@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
+      packages: write
 
     steps:
       - name: Checkout code
@@ -37,14 +37,5 @@ jobs:
         with:
           imageName: ghcr.io/${{ github.repository }}/devcontainer
           cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
-          push: never
-          runCmd: |
-            # Run Quality Checks
-            ./scripts/check_quality.sh
-            
-            # Run Unit and Integration Tests (sequential - async tests need single event loop)
-            uv run pytest tests/unit tests/integration -v
-
-            # Run Frontend Tests
-            cd frontend
-            npm run ng -- test --watch=false
+          push: filter
+          runCmd: ./scripts/presubmit.sh
