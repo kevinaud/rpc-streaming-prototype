@@ -32,7 +32,7 @@
         "ms-toolsai.jupyter",
         "tamasfe.even-better-toml",
         "angular.ng-template",
-        "zxh404.vscode-proto3"
+        "DrBlury.protobuf-vsc"
       ]
     }
   },

@@ -82,10 +82,10 @@ echo "----------------------------------------"
 cd "$PROJECT_ROOT/frontend"
 
 echo "Running Angular build (AOT strict template verification)..."
-npm run ng -- build --configuration production --no-progress
+CI=true npm run ng -- build --configuration production --no-progress
 
 echo "Running ESLint..."
-npm run ng -- lint
+CI=true npm run ng -- lint
 
 echo "Running Prettier (format check)..."
 npx prettier --check "src/**/*.{ts,html,scss}"

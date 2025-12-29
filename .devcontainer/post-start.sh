@@ -23,3 +23,5 @@ else
     echo "   To enable auto-login, create ~/.gh_token_file on your host"
     echo "   with a GitHub personal access token."
 fi
+
+uv sync
