@@ -5,8 +5,6 @@ Implements dual logging:
 - DEBUG/VERBOSE level to file for detailed debugging
 """
 
-from __future__ import annotations
-
 import logging
 import os
 import sys

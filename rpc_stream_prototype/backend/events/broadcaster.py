@@ -4,9 +4,8 @@ This module implements the publish-subscribe pattern for broadcasting
 session events to connected clients.
 """
 
-from __future__ import annotations
-
 import asyncio
+import contextlib
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -99,12 +98,10 @@ class EventBroadcaster:
 
     # Broadcast outside the lock to avoid blocking
     for queue in subscribers:
-      try:
-        queue.put_nowait(event)
-      except asyncio.QueueFull:
+      with contextlib.suppress(asyncio.QueueFull):
         # If a subscriber's queue is full, skip it
         # This prevents slow consumers from blocking others
-        pass
+        queue.put_nowait(event)
 
   async def get_subscriber_count(self, session_id: str) -> int:
     """Get the number of subscribers for a session.

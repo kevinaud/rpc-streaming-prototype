@@ -1,6 +1,7 @@
 """Unit tests for the ProposalService."""
 
 import asyncio
+from typing import TYPE_CHECKING
 
 import grpclib
 import pytest
@@ -12,11 +13,13 @@ from rpc_stream_prototype.generated.proposal.v1 import (
   CreateSessionRequest,
   GetSessionRequest,
   ProposalStatus,
-  SessionEvent,
   SubmitDecisionRequest,
   SubmitProposalRequest,
   SubscribeRequest,
 )
+
+if TYPE_CHECKING:
+  from rpc_stream_prototype.generated.proposal.v1 import SessionEvent
 
 
 class TestProposalService:

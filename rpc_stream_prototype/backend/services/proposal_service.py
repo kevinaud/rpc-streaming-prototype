@@ -3,15 +3,12 @@
 Implements the ProposalService gRPC service for the approval workflow.
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, AsyncIterator
+from typing import TYPE_CHECKING
 
 import grpclib
 from grpclib.const import Status
 
 from rpc_stream_prototype.backend.events.broadcaster import (
-  EventBroadcaster,
   EventType,
   SessionEvent,
 )
@@ -20,21 +17,15 @@ from rpc_stream_prototype.backend.models.domain import Proposal as DomainProposa
 from rpc_stream_prototype.backend.models.domain import (
   ProposalStatus as DomainProposalStatus,
 )
-from rpc_stream_prototype.backend.storage.repository import SessionRepository
 from rpc_stream_prototype.generated.proposal.v1 import (
-  CreateSessionRequest,
   CreateSessionResponse,
-  GetSessionRequest,
   GetSessionResponse,
   Proposal,
   ProposalServiceBase,
   ProposalStatus,
   Session,
-  SubmitDecisionRequest,
   SubmitDecisionResponse,
-  SubmitProposalRequest,
   SubmitProposalResponse,
-  SubscribeRequest,
   SubscribeResponse,
 )
 from rpc_stream_prototype.generated.proposal.v1 import (
@@ -42,7 +33,17 @@ from rpc_stream_prototype.generated.proposal.v1 import (
 )
 
 if TYPE_CHECKING:
-  pass
+  from collections.abc import AsyncIterator
+
+  from rpc_stream_prototype.backend.events.broadcaster import EventBroadcaster
+  from rpc_stream_prototype.backend.storage.repository import SessionRepository
+  from rpc_stream_prototype.generated.proposal.v1 import (
+    CreateSessionRequest,
+    GetSessionRequest,
+    SubmitDecisionRequest,
+    SubmitProposalRequest,
+    SubscribeRequest,
+  )
 
 logger = get_logger("services.proposal")
 

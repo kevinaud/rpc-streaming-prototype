@@ -1,12 +1,9 @@
 """End-to-end integration tests for the gRPC server."""
 
-from __future__ import annotations
-
 import asyncio
-from typing import TYPE_CHECKING, AsyncIterator
+from typing import TYPE_CHECKING
 
 import pytest
-from grpclib.client import Channel
 from grpclib.testing import ChannelFor
 
 from rpc_stream_prototype.backend.events.broadcaster import EventBroadcaster
@@ -17,14 +14,17 @@ from rpc_stream_prototype.generated.proposal.v1 import (
   GetSessionRequest,
   ProposalServiceStub,
   ProposalStatus,
-  SessionEvent,
   SubmitDecisionRequest,
   SubmitProposalRequest,
   SubscribeRequest,
 )
 
 if TYPE_CHECKING:
-  pass
+  from collections.abc import AsyncIterator
+
+  from grpclib.client import Channel
+
+  from rpc_stream_prototype.generated.proposal.v1 import SessionEvent
 
 
 @pytest.fixture

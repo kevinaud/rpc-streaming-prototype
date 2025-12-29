@@ -1,7 +1,5 @@
 """In-memory implementation of the session repository."""
 
-from __future__ import annotations
-
 import asyncio
 from typing import TYPE_CHECKING
 

@@ -4,8 +4,6 @@ These models are separate from the generated protobuf types to allow
 for internal business logic and validation.
 """
 
-from __future__ import annotations
-
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
