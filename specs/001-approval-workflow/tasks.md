@@ -177,11 +177,11 @@
 
 ### Git Workflow for PR #2
 
-- [ ] T065 Push branch and create PR: `git push -u origin pr2-boilerplate && gh pr create --title "PR #2: Directory Layout & Boilerplate" --body "Project structure, Angular scaffold, Docker Compose, Envoy config, proto files"`
-- [ ] T066 Monitor CI checks: `gh pr checks --watch`
-- [ ] T067 Address any CI failures until checks pass
-- [ ] T068 **STOP**: Ask user to review PR #2
-- [ ] T069 Squash merge after approval: `gh pr merge --squash --delete-branch`
+- [x] T065 Push branch and create PR: `git push -u origin pr2-boilerplate && gh pr create --title "PR #2: Directory Layout & Boilerplate" --body "Project structure, Angular scaffold, Docker Compose, Envoy config, proto files"`
+- [x] T066 Monitor CI checks: `gh pr checks --watch`
+- [x] T067 Address any CI failures until checks pass
+- [x] T068 **STOP**: Ask user to review PR #2
+- [x] T069 Squash merge after approval: `gh pr merge --squash --delete-branch`
 
 **Checkpoint**: Project skeleton complete. Docker Compose runs all services (stubs). Proto generation works.
 
@@ -260,8 +260,8 @@
 - [x] T101 Push branch and create PR: `git push -u origin pr3-server-implementation && gh pr create --title "PR #3: Server Implementation" --body "Full backend with gRPC service, in-memory storage, event broadcasting, logging, and tests"`
 - [x] T102 Monitor CI checks - PASSED: `gh pr checks --watch`
 - [x] T103 Address any CI failures - No failures until checks pass
-- [ ] T104 **STOP**: Ask user to review PR #3
-- [ ] T105 Squash merge after approval: `gh pr merge --squash --delete-branch`
+- [x] T104 **STOP**: Ask user to review PR #3
+- [x] T105 Squash merge after approval: `gh pr merge --squash --delete-branch`
 
 **Checkpoint**: Server fully functional. All RPC methods implemented and tested. Logging works.
 
@@ -273,53 +273,53 @@
 
 ### Git Setup for PR #4
 
-- [ ] T106 Sync main branch: `git checkout main && git pull origin main`
-- [ ] T107 Create feature branch: `git checkout -b pr4-cli-implementation`
+- [x] T106 Sync main branch: `git checkout main && git pull origin main`
+- [x] T107 Create feature branch: `git checkout -b pr4-cli-implementation`
 
 ### gRPC Client [PR4]
 
-- [ ] T108 [PR4] Create rpc_stream_prototype/cli/client/__init__.py
-- [ ] T109 [PR4] Create rpc_stream_prototype/cli/client/grpc_client.py with ProposalClient wrapper
+- [x] T108 [PR4] Create rpc_stream_prototype/cli/client/__init__.py
+- [x] T109 [PR4] Create rpc_stream_prototype/cli/client/grpc_client.py with ProposalClient wrapper
 
 ### UI Components [PR4]
 
-- [ ] T110 [P] [PR4] Create rpc_stream_prototype/cli/ui/console.py with Rich console setup
-- [ ] T111 [P] [PR4] Create rpc_stream_prototype/cli/ui/display.py (display_session_id, display_waiting_state, display_proposal_sent, display_decision_received)
-- [ ] T112 [P] [PR4] Create rpc_stream_prototype/cli/ui/prompts.py (prompt_session_action, prompt_session_id, prompt_proposal_text)
+- [x] T110 [P] [PR4] Create rpc_stream_prototype/cli/ui/console.py with Rich console setup
+- [x] T111 [P] [PR4] Create rpc_stream_prototype/cli/ui/display.py (display_session_id, display_waiting_state, display_proposal_sent, display_decision_received)
+- [x] T112 [P] [PR4] Create rpc_stream_prototype/cli/ui/prompts.py (prompt_session_action, prompt_session_id, prompt_proposal_text)
 
 ### Session Management [PR4]
 
-- [ ] T113 [PR4] Create rpc_stream_prototype/cli/session/__init__.py
-- [ ] T114 [PR4] Create rpc_stream_prototype/cli/session/proposal_loop.py with run_proposal_loop function
+- [x] T113 [PR4] Create rpc_stream_prototype/cli/session/__init__.py
+- [x] T114 [PR4] Create rpc_stream_prototype/cli/session/proposal_loop.py with run_proposal_loop function
 
 ### CLI Entry Point [PR4]
 
-- [ ] T115 [PR4] Update rpc_stream_prototype/cli/main.py with full implementation (FR-007, FR-008, FR-009, FR-010, FR-011, FR-012)
+- [x] T115 [PR4] Update rpc_stream_prototype/cli/main.py with full implementation (FR-007, FR-008, FR-009, FR-010, FR-011, FR-012)
 
 ### Shared Test Fixtures [PR4]
 
-- [ ] T116 [PR4] Create tests/fixtures/fake_proposal_client.py with FakeProposalClient (canned responses, state-verifiable per Constitution)
+- [x] T116 [PR4] Create tests/fixtures/fake_proposal_client.py with FakeProposalClient (canned responses, state-verifiable per Constitution)
 
 ### Unit Tests [PR4]
 
-- [ ] T117 [P] [PR4] Create tests/unit/cli/__init__.py
-- [ ] T118 [P] [PR4] Create tests/unit/cli/test_grpc_client.py using FakeProposalClient (no network calls)
-- [ ] T119 [P] [PR4] Create tests/unit/cli/test_prompts.py (input validation, choice handling)
-- [ ] T120 [P] [PR4] Create tests/unit/cli/test_proposal_loop.py using FakeProposalClient (proposal submission, decision flow)
+- [x] T117 [P] [PR4] Create tests/unit/cli/__init__.py
+- [x] T118 [P] [PR4] Create tests/unit/cli/test_grpc_client.py using FakeProposalClient (no network calls)
+- [x] T119 [P] [PR4] Create tests/unit/cli/test_prompts.py (input validation, choice handling)
+- [x] T120 [P] [PR4] Create tests/unit/cli/test_proposal_loop.py using FakeProposalClient (proposal submission, decision flow)
 
 ### Integration Tests [PR4]
 
-- [ ] T121 [PR4] Create tests/integration/test_cli_e2e.py (full CLI flow with real server)
+- [x] T121 [PR4] Create tests/integration/test_cli_e2e.py (full CLI flow with real server)
 
 ### Verification for PR #4
 
-- [ ] T122 [PR4] Run `pytest tests/unit/cli/` - all tests pass
+- [x] T122 [PR4] Run `pytest tests/unit/cli/` - all tests pass
 - [ ] T123 [PR4] Run `pytest tests/integration/test_cli_e2e.py` - all tests pass
-- [ ] T124 [PR4] Verify CLI starts with `rpc-cli` or `python -m rpc_stream_prototype.cli.main`
+- [x] T124 [PR4] Verify CLI starts with `rpc-cli` or `python -m rpc_stream_prototype.cli.main`
 - [ ] T125 [PR4] Verify can create session and see UUID displayed
 - [ ] T126 [PR4] Verify can continue existing session
 - [ ] T127 [PR4] Verify proposals are submitted and confirmations displayed, decisions are received
-- [ ] T128 [PR4] Verify `./scripts/check_quality.sh` passes
+- [x] T128 [PR4] Verify `./scripts/check_quality.sh` passes
 
 ### Git Workflow for PR #4
 
