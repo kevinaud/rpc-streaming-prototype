@@ -4,6 +4,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from rpc_stream_prototype.backend.storage.exceptions import (
+  ProposalNotFoundError,
+  SessionNotFoundError,
+)
 from rpc_stream_prototype.backend.storage.session_store import SessionStore
 from rpc_stream_prototype.generated.proposal.v1 import ProposalStatus
 
@@ -102,13 +106,12 @@ class TestAddProposal(TestSessionStore):
     assert len(proposal.proposal_id) == 36  # UUID format
 
   @pytest.mark.asyncio
-  async def test_returns_none_for_nonexistent_session(
-    self, store: SessionStore
-  ) -> None:
-    """add_proposal returns None for nonexistent session."""
-    proposal = await store.add_proposal("nonexistent", "Test")
+  async def test_raises_for_nonexistent_session(self, store: SessionStore) -> None:
+    """add_proposal raises SessionNotFoundError for nonexistent session."""
+    with pytest.raises(SessionNotFoundError) as exc_info:
+      await store.add_proposal("nonexistent", "Test")
 
-    assert proposal is None
+    assert exc_info.value.session_id == "nonexistent"
 
   @pytest.mark.asyncio
   async def test_proposal_added_to_session(self, store: SessionStore) -> None:
@@ -132,7 +135,6 @@ class TestUpdateProposal(TestSessionStore):
     """update_proposal can approve a proposal."""
     session = await store.create_session()
     proposal = await store.add_proposal(session.session_id, "Test")
-    assert proposal is not None
 
     updated = await store.update_proposal(
       session.session_id,
@@ -140,7 +142,6 @@ class TestUpdateProposal(TestSessionStore):
       approved=True,
     )
 
-    assert updated is not None
     assert updated.status == ProposalStatus.APPROVED
 
   @pytest.mark.asyncio
@@ -148,7 +149,6 @@ class TestUpdateProposal(TestSessionStore):
     """update_proposal can reject a proposal."""
     session = await store.create_session()
     proposal = await store.add_proposal(session.session_id, "Test")
-    assert proposal is not None
 
     updated = await store.update_proposal(
       session.session_id,
@@ -156,36 +156,34 @@ class TestUpdateProposal(TestSessionStore):
       approved=False,
     )
 
-    assert updated is not None
     assert updated.status == ProposalStatus.REJECTED
 
   @pytest.mark.asyncio
-  async def test_returns_none_for_nonexistent_session(
-    self, store: SessionStore
-  ) -> None:
-    """update_proposal returns None for nonexistent session."""
-    result = await store.update_proposal(
-      "nonexistent-session",
-      "some-proposal",
-      approved=True,
-    )
+  async def test_raises_for_nonexistent_session(self, store: SessionStore) -> None:
+    """update_proposal raises SessionNotFoundError for nonexistent session."""
+    with pytest.raises(SessionNotFoundError) as exc_info:
+      await store.update_proposal(
+        "nonexistent-session",
+        "some-proposal",
+        approved=True,
+      )
 
-    assert result is None
+    assert exc_info.value.session_id == "nonexistent-session"
 
   @pytest.mark.asyncio
-  async def test_returns_none_for_nonexistent_proposal(
-    self, store: SessionStore
-  ) -> None:
-    """update_proposal returns None for nonexistent proposal."""
+  async def test_raises_for_nonexistent_proposal(self, store: SessionStore) -> None:
+    """update_proposal raises ProposalNotFoundError for nonexistent proposal."""
     session = await store.create_session()
 
-    result = await store.update_proposal(
-      session.session_id,
-      "nonexistent-proposal",
-      approved=True,
-    )
+    with pytest.raises(ProposalNotFoundError) as exc_info:
+      await store.update_proposal(
+        session.session_id,
+        "nonexistent-proposal",
+        approved=True,
+      )
 
-    assert result is None
+    assert exc_info.value.session_id == session.session_id
+    assert exc_info.value.proposal_id == "nonexistent-proposal"
 
 
 class TestGetProposals(TestSessionStore):
@@ -279,7 +277,6 @@ class TestWatchSession(TestSessionStore):
     """watch_session shows updated proposals as proposal_updated."""
     session = await store.create_session()
     proposal = await store.add_proposal(session.session_id, "To be approved")
-    assert proposal is not None
     await store.update_proposal(session.session_id, proposal.proposal_id, approved=True)
 
     events: list[SessionEvent] = []

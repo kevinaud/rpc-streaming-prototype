@@ -12,6 +12,10 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from rpc_stream_prototype.backend.events.proto_broadcaster import ProtoBroadcaster
+from rpc_stream_prototype.backend.storage.exceptions import (
+  ProposalNotFoundError,
+  SessionNotFoundError,
+)
 from rpc_stream_prototype.generated.proposal.v1 import (
   Proposal,
   ProposalStatus,
@@ -127,7 +131,7 @@ class SessionStore:
     async with self._lock:
       return session_id in self._sessions
 
-  async def add_proposal(self, session_id: str, text: str) -> Proposal | None:
+  async def add_proposal(self, session_id: str, text: str) -> Proposal:
     """Add a proposal to a session and broadcast the event.
 
     This is an atomic operation: storage is updated first, then the event
@@ -138,7 +142,10 @@ class SessionStore:
         text: The text content of the proposal.
 
     Returns:
-        The created proposal if successful, None if session not found.
+        The created proposal.
+
+    Raises:
+        SessionNotFoundError: If the session does not exist.
     """
     proposal = Proposal(
       proposal_id=str(uuid.uuid4()),
@@ -150,7 +157,7 @@ class SessionStore:
     async with self._lock:
       session_data = self._sessions.get(session_id)
       if session_data is None:
-        return None
+        raise SessionNotFoundError(session_id)
       session_data.proposals.append(proposal)
 
     # Broadcast after releasing the lock
@@ -165,7 +172,7 @@ class SessionStore:
     proposal_id: str,
     *,
     approved: bool,
-  ) -> Proposal | None:
+  ) -> Proposal:
     """Update a proposal's status and broadcast the event.
 
     This is an atomic operation: storage is updated first, then the event
@@ -177,7 +184,11 @@ class SessionStore:
         approved: Whether to approve (True) or reject (False).
 
     Returns:
-        The updated proposal if successful, None if not found.
+        The updated proposal.
+
+    Raises:
+        SessionNotFoundError: If the session does not exist.
+        ProposalNotFoundError: If the proposal does not exist in the session.
     """
     new_status = ProposalStatus.APPROVED if approved else ProposalStatus.REJECTED
     updated: Proposal | None = None
@@ -185,7 +196,7 @@ class SessionStore:
     async with self._lock:
       session_data = self._sessions.get(session_id)
       if session_data is None:
-        return None
+        raise SessionNotFoundError(session_id)
 
       # Find and update the proposal
       for i, proposal in enumerate(session_data.proposals):
@@ -200,7 +211,7 @@ class SessionStore:
           break
 
     if updated is None:
-      return None
+      raise ProposalNotFoundError(session_id, proposal_id)
 
     # Broadcast after releasing the lock
     event = SessionEvent(proposal_updated=updated)

@@ -10,6 +10,10 @@ import grpclib
 from grpclib.const import Status
 
 from rpc_stream_prototype.backend.logging import get_logger
+from rpc_stream_prototype.backend.storage.exceptions import (
+  ProposalNotFoundError,
+  SessionNotFoundError,
+)
 from rpc_stream_prototype.generated.proposal.v1 import (
   CreateSessionResponse,
   GetSessionResponse,
@@ -162,15 +166,14 @@ class ProposalService(ProposalServiceBase):
         "Proposal text cannot be empty",
       )
 
-    # Create and store the proposal (also broadcasts the event)
-    proposal = await self._store.add_proposal(session_id, text.strip())
-
-    if proposal is None:
+    try:
+      proposal = await self._store.add_proposal(session_id, text.strip())
+    except SessionNotFoundError:
       logger.warning("Submit proposal failed - session not found: %s", session_id)
       raise grpclib.GRPCError(
         Status.NOT_FOUND,
         f"Session not found: {session_id}",
-      )
+      ) from None
 
     logger.info(
       "Proposal %s submitted to session %s",
@@ -198,23 +201,31 @@ class ProposalService(ProposalServiceBase):
     proposal_id = submit_decision_request.proposal_id
     approved = submit_decision_request.approved
 
-    # Update the proposal (also broadcasts the event)
-    updated = await self._store.update_proposal(
-      session_id,
-      proposal_id,
-      approved=approved,
-    )
-
-    if updated is None:
-      logger.warning(
-        "Submit decision failed - session %s or proposal %s not found",
+    try:
+      updated = await self._store.update_proposal(
         session_id,
         proposal_id,
+        approved=approved,
+      )
+    except SessionNotFoundError:
+      logger.warning(
+        "Submit decision failed - session not found: %s",
+        session_id,
       )
       raise grpclib.GRPCError(
         Status.NOT_FOUND,
-        f"Session or proposal not found: {session_id}/{proposal_id}",
+        f"Session not found: {session_id}",
+      ) from None
+    except ProposalNotFoundError:
+      logger.warning(
+        "Submit decision failed - proposal %s not found in session %s",
+        proposal_id,
+        session_id,
       )
+      raise grpclib.GRPCError(
+        Status.NOT_FOUND,
+        f"Proposal not found: {proposal_id}",
+      ) from None
 
     decision = "approved" if approved else "rejected"
     logger.info(
