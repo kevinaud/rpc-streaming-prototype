@@ -32,7 +32,7 @@ uv run pytest tests/unit tests/integration -v
 echo ""
 echo "🧪 Running Frontend Tests..."
 cd frontend
-npm run ng -- test --watch=false
+CI=true npm run ng -- test --watch=false
 
 echo ""
 echo "✅ All presubmit checks passed!"
