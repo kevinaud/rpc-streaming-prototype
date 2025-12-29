@@ -6,10 +6,9 @@ from grpclib.reflection.service import ServerReflection
 from grpclib.server import Server
 from grpclib.utils import graceful_exit
 
-from rpc_stream_prototype.backend.events.broadcaster import EventBroadcaster
 from rpc_stream_prototype.backend.logging import configure_logging, get_logger
 from rpc_stream_prototype.backend.services.proposal_service import ProposalService
-from rpc_stream_prototype.backend.storage.memory_store import InMemorySessionRepository
+from rpc_stream_prototype.backend.storage.session_store import SessionStore
 
 logger = get_logger("main")
 
@@ -20,11 +19,11 @@ async def main() -> None:
   configure_logging()
 
   # Initialize dependencies
-  repository = InMemorySessionRepository()
-  broadcaster = EventBroadcaster()
+  store = SessionStore()
+  await store.connect()
 
   # Create the service with dependencies
-  proposal_service = ProposalService(repository, broadcaster)
+  proposal_service = ProposalService(store)
   services = [proposal_service]
 
   # Enable Reflection for debugging tools like grpcurl
@@ -37,10 +36,13 @@ async def main() -> None:
   logger.info("Starting server on %s:%d with Reflection enabled", host, port)
   print(f"Serving on {host}:{port} with Reflection enabled...")
 
-  with graceful_exit([server]):
-    await server.start(host, port)
-    logger.info("Server started successfully")
-    await server.wait_closed()
+  try:
+    with graceful_exit([server]):
+      await server.start(host, port)
+      logger.info("Server started successfully")
+      await server.wait_closed()
+  finally:
+    await store.disconnect()
 
 
 if __name__ == "__main__":

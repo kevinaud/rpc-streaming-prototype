@@ -15,6 +15,7 @@ dependencies = [
   "structlog>=25.5.0",
   "tenacity>=9.1.2",
   "httpx>=0.28.1",
+  "broadcaster>=0.3.1",
 ]
 
 [dependency-groups]
@@ -146,6 +147,7 @@ reportUnusedClass = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
 markers = [
     "integration: marks tests as integration tests (require API keys, slower)",
 ]

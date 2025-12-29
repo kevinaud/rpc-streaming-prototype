@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING
 import pytest
 from grpclib.testing import ChannelFor
 
-from rpc_stream_prototype.backend.events.broadcaster import EventBroadcaster
 from rpc_stream_prototype.backend.services.proposal_service import ProposalService
-from rpc_stream_prototype.backend.storage.memory_store import InMemorySessionRepository
+from rpc_stream_prototype.backend.storage.session_store import SessionStore
 from rpc_stream_prototype.generated.proposal.v1 import (
   CreateSessionRequest,
   GetSessionRequest,
@@ -20,23 +19,33 @@ from rpc_stream_prototype.generated.proposal.v1 import (
 )
 
 if TYPE_CHECKING:
-  from collections.abc import AsyncIterator
+  from collections.abc import AsyncGenerator
 
   from grpclib.client import Channel
 
-  from rpc_stream_prototype.generated.proposal.v1 import SessionEvent
+  from rpc_stream_prototype.generated.proposal.v1 import (
+    Proposal,
+    SessionEvent,
+  )
 
 
 @pytest.fixture
-def service() -> ProposalService:
+async def store() -> AsyncGenerator[SessionStore]:
+  """Create a connected store for each test."""
+  _store = SessionStore()
+  await _store.connect()
+  yield _store
+  await _store.disconnect()
+
+
+@pytest.fixture
+def service(store: SessionStore) -> ProposalService:
   """Create a fresh service with real dependencies."""
-  repository = InMemorySessionRepository()
-  broadcaster = EventBroadcaster()
-  return ProposalService(repository, broadcaster)
+  return ProposalService(store)
 
 
 @pytest.fixture
-async def channel(service: ProposalService) -> AsyncIterator[Channel]:
+async def channel(service: ProposalService) -> AsyncGenerator[Channel]:
   """Create a test channel connected to the service."""
   async with ChannelFor([service]) as channel:
     yield channel
@@ -198,60 +207,81 @@ class TestServerE2E:
   async def test_subscribe_live_events_via_grpc(
     self, stub: ProposalServiceStub
   ) -> None:
-    """Subscribe receives live events via gRPC streaming."""
+    """Subscribe receives live events after history replay."""
     session = await stub.create_session(CreateSessionRequest())
     session_id = session.session.session_id
 
     events: list[SessionEvent] = []
-    subscription_ready = asyncio.Event()
+    received_event = asyncio.Event()
 
-    async def subscribe_task() -> None:
+    async def subscribe_and_collect() -> None:
       async for response in stub.subscribe(
-        SubscribeRequest(session_id=session_id, client_id="live-client")
+        SubscribeRequest(session_id=session_id, client_id="test-client")
       ):
-        if not subscription_ready.is_set():
-          subscription_ready.set()
         events.append(response.event)
-        if len(events) >= 1:
-          break
+        received_event.set()
+        break
 
-    # Start subscription
-    task = asyncio.create_task(subscribe_task())
+    # Start subscribing in background
+    subscribe_task = asyncio.create_task(subscribe_and_collect())
 
-    # Wait for subscription to be ready
-    await asyncio.wait_for(subscription_ready.wait(), timeout=2.0)
+    # Wait a bit for subscription to be established
+    await asyncio.sleep(0.05)
 
-    # Submit a proposal - should be received live
+    # Submit a proposal (should trigger live event)
     await stub.submit_proposal(
-      SubmitProposalRequest(session_id=session_id, text="Live event test")
+      SubmitProposalRequest(session_id=session_id, text="Live proposal")
     )
 
-    # Wait for task to complete
-    await asyncio.wait_for(task, timeout=2.0)
+    # Wait for event
+    await asyncio.wait_for(received_event.wait(), timeout=2.0)
+    subscribe_task.cancel()
 
     assert len(events) == 1
-    assert events[0].proposal_created.text == "Live event test"
+    assert events[0].proposal_created.text == "Live proposal"
 
   @pytest.mark.asyncio
-  async def test_multiple_proposals_fifo_order(self, stub: ProposalServiceStub) -> None:
-    """Multiple proposals are received in FIFO order."""
+  async def test_multiple_proposals_and_decisions(
+    self, stub: ProposalServiceStub
+  ) -> None:
+    """Multiple proposals can be submitted and decided."""
     session = await stub.create_session(CreateSessionRequest())
     session_id = session.session.session_id
 
     # Submit multiple proposals
-    texts = ["First", "Second", "Third", "Fourth", "Fifth"]
-    for text in texts:
-      await stub.submit_proposal(
-        SubmitProposalRequest(session_id=session_id, text=text)
+    proposals: list[Proposal] = []
+    for i in range(3):
+      response = await stub.submit_proposal(
+        SubmitProposalRequest(session_id=session_id, text=f"Proposal {i}")
       )
+      proposals.append(response.proposal)
 
-    # Subscribe and verify order
-    received_texts: list[str] = []
+    # Approve first, reject second, leave third pending
+    await stub.submit_decision(
+      SubmitDecisionRequest(
+        session_id=session_id,
+        proposal_id=proposals[0].proposal_id,
+        approved=True,
+      )
+    )
+    await stub.submit_decision(
+      SubmitDecisionRequest(
+        session_id=session_id,
+        proposal_id=proposals[1].proposal_id,
+        approved=False,
+      )
+    )
+
+    # Subscribe and verify history
+    events: list[SessionEvent] = []
     async for response in stub.subscribe(
-      SubscribeRequest(session_id=session_id, client_id="order-test")
+      SubscribeRequest(session_id=session_id, client_id="verifier")
     ):
-      received_texts.append(response.event.proposal_created.text)
-      if len(received_texts) >= len(texts):
+      events.append(response.event)
+      if len(events) >= 3:
         break
 
-    assert received_texts == texts
+    # First two should be updates (approved/rejected), third should be created
+    assert events[0].proposal_updated.status == ProposalStatus.APPROVED
+    assert events[1].proposal_updated.status == ProposalStatus.REJECTED
+    assert events[2].proposal_created.status == ProposalStatus.PENDING

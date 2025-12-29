@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING
 import grpclib
 import pytest
 
-from rpc_stream_prototype.backend.events.broadcaster import EventBroadcaster, EventType
 from rpc_stream_prototype.backend.services.proposal_service import ProposalService
-from rpc_stream_prototype.backend.storage.memory_store import InMemorySessionRepository
+from rpc_stream_prototype.backend.storage.session_store import SessionStore
 from rpc_stream_prototype.generated.proposal.v1 import (
   CreateSessionRequest,
   GetSessionRequest,
@@ -19,6 +18,8 @@ from rpc_stream_prototype.generated.proposal.v1 import (
 )
 
 if TYPE_CHECKING:
+  from collections.abc import AsyncGenerator
+
   from rpc_stream_prototype.generated.proposal.v1 import SessionEvent
 
 
@@ -26,23 +27,17 @@ class TestProposalService:
   """Tests for ProposalService."""
 
   @pytest.fixture
-  def repository(self) -> InMemorySessionRepository:
-    """Create a fresh repository for each test."""
-    return InMemorySessionRepository()
+  async def store(self) -> AsyncGenerator[SessionStore]:
+    """Create a connected store for each test."""
+    _store = SessionStore()
+    await _store.connect()
+    yield _store
+    await _store.disconnect()
 
   @pytest.fixture
-  def broadcaster(self) -> EventBroadcaster:
-    """Create a fresh broadcaster for each test."""
-    return EventBroadcaster()
-
-  @pytest.fixture
-  def service(
-    self,
-    repository: InMemorySessionRepository,
-    broadcaster: EventBroadcaster,
-  ) -> ProposalService:
+  def service(self, store: SessionStore) -> ProposalService:
     """Create a service with fresh dependencies."""
-    return ProposalService(repository, broadcaster)
+    return ProposalService(store)
 
 
 class TestCreateSession(TestProposalService):
@@ -72,14 +67,14 @@ class TestCreateSession(TestProposalService):
   async def test_session_is_persisted(
     self,
     service: ProposalService,
-    repository: InMemorySessionRepository,
+    store: SessionStore,
   ) -> None:
-    """CreateSession persists the session in the repository."""
+    """CreateSession persists the session in the store."""
     request = CreateSessionRequest()
 
     response = await service.create_session(request)
 
-    session = await repository.get_session(response.session.session_id)
+    session = await store.get_session(response.session.session_id)
     assert session is not None
 
 
@@ -189,43 +184,21 @@ class TestSubmitProposal(TestProposalService):
     assert exc_info.value.status == grpclib.const.Status.INVALID_ARGUMENT
 
   @pytest.mark.asyncio
-  async def test_broadcasts_proposal_created_event(
-    self,
-    service: ProposalService,
-    broadcaster: EventBroadcaster,
-  ) -> None:
-    """SubmitProposal broadcasts a PROPOSAL_CREATED event."""
-    session = await service.create_session(CreateSessionRequest())
-    session_id = session.session.session_id
-
-    # Subscribe before submitting
-    queue = await broadcaster.subscribe(session_id)
-
-    request = SubmitProposalRequest(session_id=session_id, text="Test")
-    await service.submit_proposal(request)
-
-    # Verify event was broadcast
-    event = queue.get_nowait()
-    assert event.event_type == EventType.PROPOSAL_CREATED
-    assert event.proposal.text == "Test"
-
-  @pytest.mark.asyncio
   async def test_persists_proposal(
     self,
     service: ProposalService,
-    repository: InMemorySessionRepository,
+    store: SessionStore,
   ) -> None:
-    """SubmitProposal persists the proposal in the repository."""
+    """SubmitProposal persists the proposal in the store."""
     session = await service.create_session(CreateSessionRequest())
     session_id = session.session.session_id
 
     request = SubmitProposalRequest(session_id=session_id, text="Test")
     response = await service.submit_proposal(request)
 
-    stored_session = await repository.get_session(session_id)
-    assert stored_session is not None
-    assert len(stored_session.proposals) == 1
-    assert stored_session.proposals[0].proposal_id == response.proposal.proposal_id
+    proposals = await store.get_proposals(session_id)
+    assert len(proposals) == 1
+    assert proposals[0].proposal_id == response.proposal.proposal_id
 
 
 class TestSubmitDecision(TestProposalService):
@@ -305,37 +278,6 @@ class TestSubmitDecision(TestProposalService):
 
     assert exc_info.value.status == grpclib.const.Status.NOT_FOUND
 
-  @pytest.mark.asyncio
-  async def test_broadcasts_proposal_updated_event(
-    self,
-    service: ProposalService,
-    broadcaster: EventBroadcaster,
-  ) -> None:
-    """SubmitDecision broadcasts a PROPOSAL_UPDATED event."""
-    session = await service.create_session(CreateSessionRequest())
-    session_id = session.session.session_id
-
-    # Subscribe BEFORE creating proposal so we receive the creation event
-    queue = await broadcaster.subscribe(session_id)
-
-    proposal = await service.submit_proposal(
-      SubmitProposalRequest(session_id=session_id, text="Test")
-    )
-
-    # Drain the PROPOSAL_CREATED event
-    queue.get_nowait()
-
-    request = SubmitDecisionRequest(
-      session_id=session_id,
-      proposal_id=proposal.proposal.proposal_id,
-      approved=True,
-    )
-    await service.submit_decision(request)
-
-    # Verify event was broadcast
-    event = queue.get_nowait()
-    assert event.event_type == EventType.PROPOSAL_UPDATED
-
 
 class TestSubscribe(TestProposalService):
   """Tests for Subscribe RPC."""
@@ -385,24 +327,35 @@ class TestSubscribe(TestProposalService):
     assert events[1].proposal_created.text == "Second"
 
   @pytest.mark.asyncio
-  async def test_receives_live_events(
-    self,
-    service: ProposalService,
-    broadcaster: EventBroadcaster,
+  async def test_replays_approved_proposals_as_updated(
+    self, service: ProposalService
   ) -> None:
-    """Subscribe receives live events after subscribing via broadcaster."""
+    """Subscribe replays approved proposals with proposal_updated."""
     session = await service.create_session(CreateSessionRequest())
     session_id = session.session.session_id
 
-    # Subscribe directly to the broadcaster to verify live event delivery
-    queue = await broadcaster.subscribe(session_id)
-
-    # Submit a proposal - should be broadcast
-    await service.submit_proposal(
-      SubmitProposalRequest(session_id=session_id, text="Live proposal")
+    # Add and approve a proposal
+    proposal = await service.submit_proposal(
+      SubmitProposalRequest(session_id=session_id, text="Approved proposal")
+    )
+    await service.submit_decision(
+      SubmitDecisionRequest(
+        session_id=session_id,
+        proposal_id=proposal.proposal.proposal_id,
+        approved=True,
+      )
     )
 
-    # Verify the event was received
-    event = queue.get_nowait()
-    assert event.event_type == EventType.PROPOSAL_CREATED
-    assert event.proposal.text == "Live proposal"
+    request = SubscribeRequest(session_id=session_id, client_id="client-1")
+    events: list[SessionEvent] = []
+
+    async def collect_events() -> None:
+      async for response in service.subscribe(request):
+        events.append(response.event)
+        if len(events) >= 1:
+          break
+
+    await asyncio.wait_for(collect_events(), timeout=1.0)
+
+    assert len(events) == 1
+    assert events[0].proposal_updated.status == ProposalStatus.APPROVED

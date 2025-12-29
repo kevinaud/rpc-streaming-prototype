@@ -1,6 +1,5 @@
 """Storage layer for session data."""
 
-from rpc_stream_prototype.backend.storage.memory_store import InMemorySessionRepository
-from rpc_stream_prototype.backend.storage.repository import SessionRepository
+from rpc_stream_prototype.backend.storage.session_store import SessionStore
 
-__all__ = ["InMemorySessionRepository", "SessionRepository"]
+__all__ = ["SessionStore"]

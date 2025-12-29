@@ -85,6 +85,18 @@ wheels = [
 ]
 
 [[package]]
+name = "broadcaster"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0f/9a/937530b4b1339f96423ef314b832aa585250c99de465a6ec1a12da03bbda/broadcaster-0.3.1.tar.gz", hash = "sha256:35d1e174a98346d184cc6558979548340e877ae841c65c7e354153a84fe675d6", size = 6945, upload-time = "2024-08-01T21:15:38.867Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/17/db/6789b924f1349739ea3a4eff0ad6877d1c4a2f844e8a15db49fd6335a532/broadcaster-0.3.1-py3-none-any.whl", hash = "sha256:433023ab6b6b4a8da9cbba95910eff52b1e767141419659be287cfd49f2a3ecb", size = 9545, upload-time = "2024-08-01T21:15:36.491Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2025.11.12"
 source = { registry = "https://pypi.org/simple" }
@@ -928,6 +940,7 @@ name = "rpc-stream-prototype"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "broadcaster" },
     { name = "httpx" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
@@ -954,6 +967,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "broadcaster", specifier = ">=0.3.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "pydantic", specifier = ">=2.10.0" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },

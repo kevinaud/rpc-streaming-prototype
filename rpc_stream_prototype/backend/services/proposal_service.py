@@ -5,38 +5,25 @@ Implements the ProposalService gRPC service for the approval workflow.
 
 from typing import TYPE_CHECKING
 
+import betterproto
 import grpclib
 from grpclib.const import Status
 
-from rpc_stream_prototype.backend.events.broadcaster import (
-  EventType,
-  SessionEvent,
-)
 from rpc_stream_prototype.backend.logging import get_logger
-from rpc_stream_prototype.backend.models.domain import Proposal as DomainProposal
-from rpc_stream_prototype.backend.models.domain import (
-  ProposalStatus as DomainProposalStatus,
-)
 from rpc_stream_prototype.generated.proposal.v1 import (
   CreateSessionResponse,
   GetSessionResponse,
-  Proposal,
   ProposalServiceBase,
-  ProposalStatus,
   Session,
   SubmitDecisionResponse,
   SubmitProposalResponse,
   SubscribeResponse,
 )
-from rpc_stream_prototype.generated.proposal.v1 import (
-  SessionEvent as ProtoSessionEvent,
-)
 
 if TYPE_CHECKING:
   from collections.abc import AsyncIterator
 
-  from rpc_stream_prototype.backend.events.broadcaster import EventBroadcaster
-  from rpc_stream_prototype.backend.storage.repository import SessionRepository
+  from rpc_stream_prototype.backend.storage.session_store import SessionStore
   from rpc_stream_prototype.generated.proposal.v1 import (
     CreateSessionRequest,
     GetSessionRequest,
@@ -48,26 +35,6 @@ if TYPE_CHECKING:
 logger = get_logger("services.proposal")
 
 
-def _domain_status_to_proto(status: DomainProposalStatus) -> ProposalStatus:
-  """Convert domain ProposalStatus to proto ProposalStatus."""
-  mapping = {
-    DomainProposalStatus.PENDING: ProposalStatus.PENDING,
-    DomainProposalStatus.APPROVED: ProposalStatus.APPROVED,
-    DomainProposalStatus.REJECTED: ProposalStatus.REJECTED,
-  }
-  return mapping.get(status, ProposalStatus.UNSPECIFIED)
-
-
-def _domain_proposal_to_proto(proposal: DomainProposal) -> Proposal:
-  """Convert domain Proposal to proto Proposal."""
-  return Proposal(
-    proposal_id=proposal.proposal_id,
-    text=proposal.text,
-    status=_domain_status_to_proto(proposal.status),
-    created_at=proposal.created_at,
-  )
-
-
 class ProposalService(ProposalServiceBase):
   """Implementation of the ProposalService gRPC service.
 
@@ -75,19 +42,13 @@ class ProposalService(ProposalServiceBase):
   session management, proposal submission, and decision processing.
   """
 
-  def __init__(
-    self,
-    repository: SessionRepository,
-    broadcaster: EventBroadcaster,
-  ) -> None:
+  def __init__(self, store: SessionStore) -> None:
     """Initialize the service with dependencies.
 
     Args:
-        repository: The session repository for data persistence.
-        broadcaster: The event broadcaster for real-time updates.
+        store: The session store for data persistence and event broadcasting.
     """
-    self._repository = repository
-    self._broadcaster = broadcaster
+    self._store = store
 
   async def create_session(
     self, create_session_request: CreateSessionRequest
@@ -100,9 +61,8 @@ class ProposalService(ProposalServiceBase):
     Returns:
         Response containing the created session with its ID.
     """
-    session = await self._repository.create_session()
+    session = await self._store.create_session()
     logger.info("Created session: %s", session.session_id)
-    logger.debug("Session details: created_at=%s", session.created_at)
 
     return CreateSessionResponse(session=Session(session_id=session.session_id))
 
@@ -121,7 +81,7 @@ class ProposalService(ProposalServiceBase):
         GRPCError: NOT_FOUND if session doesn't exist.
     """
     session_id = get_session_request.session_id
-    session = await self._repository.get_session(session_id)
+    session = await self._store.get_session(session_id)
 
     if session is None:
       logger.warning("Session not found: %s", session_id)
@@ -154,8 +114,7 @@ class ProposalService(ProposalServiceBase):
     client_id = subscribe_request.client_id
 
     # Verify session exists
-    session = await self._repository.get_session(session_id)
-    if session is None:
+    if not await self._store.session_exists(session_id):
       logger.warning("Subscribe failed - session not found: %s", session_id)
       raise grpclib.GRPCError(
         Status.NOT_FOUND,
@@ -164,44 +123,18 @@ class ProposalService(ProposalServiceBase):
 
     logger.info("Client %s subscribing to session %s", client_id, session_id)
 
-    # Replay historical proposals
-    for proposal in session.proposals:
-      proto_proposal = _domain_proposal_to_proto(proposal)
-      if proposal.status == DomainProposalStatus.PENDING:
-        event = ProtoSessionEvent(proposal_created=proto_proposal)
-      else:
-        event = ProtoSessionEvent(proposal_updated=proto_proposal)
+    # Use the store's watch_session which handles history + live streaming
+    async for event in self._store.watch_session(session_id):
       yield SubscribeResponse(event=event)
-      logger.debug(
-        "Replayed proposal %s to client %s",
-        proposal.proposal_id,
-        client_id,
-      )
-
-    # Subscribe to live events
-    queue = await self._broadcaster.subscribe(session_id)
-    logger.debug("Client %s now receiving live events", client_id)
-
-    try:
-      while True:
-        event = await queue.get()
-        proto_proposal = _domain_proposal_to_proto(event.proposal)
-
-        if event.event_type == EventType.PROPOSAL_CREATED:
-          proto_event = ProtoSessionEvent(proposal_created=proto_proposal)
-        else:
-          proto_event = ProtoSessionEvent(proposal_updated=proto_proposal)
-
-        yield SubscribeResponse(event=proto_event)
+      # Log based on event type using betterproto's oneof helper
+      event_type, proposal = betterproto.which_one_of(event, "event")
+      if proposal and hasattr(proposal, "proposal_id"):
         logger.debug(
-          "Sent event %s for proposal %s to client %s",
-          event.event_type.value,
-          event.proposal.proposal_id,
+          "Sent %s for %s to client %s",
+          event_type,
+          proposal.proposal_id,
           client_id,
         )
-    finally:
-      await self._broadcaster.unsubscribe(session_id, queue)
-      logger.info("Client %s unsubscribed from session %s", client_id, session_id)
 
   async def submit_proposal(
     self, submit_proposal_request: SubmitProposalRequest
@@ -229,11 +162,10 @@ class ProposalService(ProposalServiceBase):
         "Proposal text cannot be empty",
       )
 
-    # Create and store the proposal
-    proposal = DomainProposal.create(session_id=session_id, text=text.strip())
-    stored = await self._repository.add_proposal(session_id, proposal)
+    # Create and store the proposal (also broadcasts the event)
+    proposal = await self._store.add_proposal(session_id, text.strip())
 
-    if stored is None:
+    if proposal is None:
       logger.warning("Submit proposal failed - session not found: %s", session_id)
       raise grpclib.GRPCError(
         Status.NOT_FOUND,
@@ -246,15 +178,7 @@ class ProposalService(ProposalServiceBase):
       session_id,
     )
 
-    # Broadcast the event
-    event = SessionEvent(
-      session_id=session_id,
-      event_type=EventType.PROPOSAL_CREATED,
-      proposal=proposal,
-    )
-    await self._broadcaster.broadcast(event)
-
-    return SubmitProposalResponse(proposal=_domain_proposal_to_proto(proposal))
+    return SubmitProposalResponse(proposal=proposal)
 
   async def submit_decision(
     self, submit_decision_request: SubmitDecisionRequest
@@ -274,8 +198,8 @@ class ProposalService(ProposalServiceBase):
     proposal_id = submit_decision_request.proposal_id
     approved = submit_decision_request.approved
 
-    # Update the proposal
-    updated = await self._repository.update_proposal(
+    # Update the proposal (also broadcasts the event)
+    updated = await self._store.update_proposal(
       session_id,
       proposal_id,
       approved=approved,
@@ -300,12 +224,4 @@ class ProposalService(ProposalServiceBase):
       decision,
     )
 
-    # Broadcast the event
-    event = SessionEvent(
-      session_id=session_id,
-      event_type=EventType.PROPOSAL_UPDATED,
-      proposal=updated,
-    )
-    await self._broadcaster.broadcast(event)
-
-    return SubmitDecisionResponse(proposal=_domain_proposal_to_proto(updated))
+    return SubmitDecisionResponse(proposal=updated)

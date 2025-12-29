@@ -1,9 +1,5 @@
-"""Domain models for the approval workflow."""
+"""Domain models for the approval workflow.
 
-from rpc_stream_prototype.backend.models.domain import (
-  Proposal,
-  ProposalStatus,
-  Session,
-)
-
-__all__ = ["Proposal", "ProposalStatus", "Session"]
+Note: This package is kept for backwards compatibility but models
+are now sourced directly from the generated protobuf types.
+"""
