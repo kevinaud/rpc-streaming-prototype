@@ -6,6 +6,7 @@
 
 # Node.js (will be installed in container)
 node_modules/
+frontend/node_modules/
 
 # Python
 __pycache__/
@@ -18,7 +19,11 @@ dist/
 build/
 *.egg-info/
 
+# Generated code (regenerated in container)
+rpc_stream_prototype/generated/
+
 # Logs
+logs/
 *.log
 npm-debug.log*
 
@@ -40,3 +45,7 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Angular build artifacts
+frontend/dist/
+frontend/.angular/

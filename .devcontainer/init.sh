@@ -2,8 +2,10 @@
 # ============================================================
 # Dev Container Initialization Script
 # ============================================================
-# Restores dependencies from backup after workspace mount
-# and syncs to catch any drift from lockfile changes
+# Syncs dependencies after workspace mount.
+# 
+# This runs as postCreateCommand (once after container create).
+# See post-start.sh for things that run every container start.
 # ============================================================
 
 set -e
@@ -14,27 +16,10 @@ echo "🚀 Initializing dev container..."
 # Fix uv-cache permissions (for CI runner compatibility)
 # ------------------------------------------------------------
 if [ -d "/opt/uv-cache" ]; then
-    # Ensure current user can write to uv-cache
     if [ ! -w "/opt/uv-cache" ]; then
         echo "🔧 Fixing uv-cache permissions..."
         sudo chown -R "$(id -u):$(id -g)" /opt/uv-cache 2>/dev/null || true
     fi
-fi
-
-# ------------------------------------------------------------
-# Node.js Dependencies: Restore from backup
-# ------------------------------------------------------------
-if [ -d "/opt/backup/node_modules" ]; then
-    if [ ! -d "node_modules" ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
-        echo "📦 Restoring node_modules from backup..."
-        cp -r /opt/backup/node_modules ./node_modules
-    fi
-fi
-
-# Sync npm dependencies to catch any drift
-if [ -f "package.json" ]; then
-    echo "📦 Syncing npm dependencies..."
-    npm install
 fi
 
 # ------------------------------------------------------------
@@ -44,13 +29,19 @@ echo "🐍 Syncing Python dependencies..."
 uv sync
 
 # ------------------------------------------------------------
-# GitHub CLI Auto-Login (from legacy post-start.sh)
+# Frontend Node.js Dependencies: Restore from backup
 # ------------------------------------------------------------
-if [ -s /tmp/.gh_token_file ]; then
-    echo "🔑 Auto-logging into GitHub CLI..."
-    cat /tmp/.gh_token_file | gh auth login --with-token
-else
-    echo "⚠️  No GitHub token found. Skipping auto-login."
+if [ -d "/opt/backup/frontend_node_modules" ]; then
+    if [ ! -d "frontend/node_modules" ] || [ -z "$(ls -A frontend/node_modules 2>/dev/null)" ]; then
+        echo "📦 Restoring frontend/node_modules from backup..."
+        cp -r /opt/backup/frontend_node_modules ./frontend/node_modules
+    fi
+fi
+
+# Sync npm dependencies to catch any drift
+if [ -f "frontend/package.json" ]; then
+    echo "📦 Syncing frontend npm dependencies..."
+    (cd frontend && npm install)
 fi
 
 echo "✅ Dev container initialization complete!"

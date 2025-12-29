@@ -32,23 +32,20 @@
         "ms-toolsai.jupyter",
         "tamasfe.even-better-toml",
         "angular.ng-template",
-        "zxh404.vscode-proto3"
+        "DrBlury.protobuf-vsc"
       ]
     }
   },
 
-  // HOST SIDE: Ensure the file exists before Docker tries to mount it.
   "initializeCommand": "touch ${localEnv:HOME}/.gh_token_file",
 
-  // Mounts for persistent caching and GitHub token
   "mounts": [
-    "source=${localEnv:HOME}/.gh_token_file,target=/tmp/.gh_token_file,type=bind,readonly",
+    "source=${localEnv:HOME}/.gh_token_file,target=/home/vscode/.gh_token_file,type=bind,readonly",
     "source=uv-cache,target=/opt/uv-cache,type=volume"
   ],
 
-  // Forward common development ports
   "forwardPorts": [4200, 8080, 50051],
 
-  // Single init script replaces postCreate + postStart
-  "postCreateCommand": "bash .devcontainer/init.sh"
+  "postCreateCommand": "bash .devcontainer/init.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh"
 }

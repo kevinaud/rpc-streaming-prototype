@@ -1,0 +1,28 @@
+syntax = "proto3";
+package proposal.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Status of a proposal.
+enum ProposalStatus {
+  // Default unspecified value.
+  PROPOSAL_STATUS_UNSPECIFIED = 0;
+  // Proposal is pending review.
+  PROPOSAL_STATUS_PENDING = 1;
+  // Proposal has been approved.
+  PROPOSAL_STATUS_APPROVED = 2;
+  // Proposal has been rejected.
+  PROPOSAL_STATUS_REJECTED = 3;
+}
+
+// A proposal submitted by an agent for approval.
+message Proposal {
+  // Unique identifier for this proposal.
+  string proposal_id = 1;
+  // The text content of the proposal.
+  string text = 2;
+  // Current status of the proposal.
+  ProposalStatus status = 3;
+  // Timestamp when the proposal was created.
+  google.protobuf.Timestamp created_at = 4;
+}

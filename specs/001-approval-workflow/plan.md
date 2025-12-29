@@ -16,7 +16,7 @@
         ▲                                                                                      ▲
         │                                                                                      │
         │ Subscribe (Server-Side Stream)                                                       │
-        │ SubmitRequest (Unary)                                                                │
+        │ SubmitProposal (Unary)                                                                │
         │                                                                                      │
         └──────────────────────────────────────────────────────────────────────────────────────┘
                                                                                                │
@@ -361,23 +361,23 @@ jobs:
 
 Create all three proto files as specified:
 
-**File**: `protos/approval_request.proto`
+**File**: `protos/proposal.proto`
 ```protobuf
 syntax = "proto3";
-package approval.v1;
+package proposal.v1;
 import "google/protobuf/timestamp.proto";
 
-enum RequestStatus {
+enum ProposalStatus {
   STATUS_UNSPECIFIED = 0;
   PENDING = 1;
   APPROVED = 2;
   REJECTED = 3;
 }
 
-message ApprovalRequest {
-  string request_id = 1;
+message Proposal {
+  string proposal_id = 1;
   string text = 2;
-  RequestStatus status = 3;
+  ProposalStatus status = 3;
   google.protobuf.Timestamp created_at = 4;
 }
 ```
@@ -385,8 +385,8 @@ message ApprovalRequest {
 **File**: `protos/session.proto`
 ```protobuf
 syntax = "proto3";
-package approval.v1;
-import "approval_request.proto";
+package proposal.v1;
+import "proposal.proto";
 
 message Session {
   string session_id = 1;
@@ -394,8 +394,8 @@ message Session {
 
 message SessionEvent {
   oneof event {
-    ApprovalRequest request_created = 1;
-    ApprovalRequest request_updated = 2;
+    Proposal request_created = 1;
+    Proposal request_updated = 2;
   }
 }
 ```
@@ -403,23 +403,23 @@ message SessionEvent {
 **File**: `protos/approval_service.proto`
 ```protobuf
 syntax = "proto3";
-package approval.v1;
+package proposal.v1;
 import "session.proto";
-import "approval_request.proto";
+import "proposal.proto";
 
-service ApprovalService {
+service ProposalService {
   rpc CreateSession (CreateSessionRequest) returns (Session);
   rpc GetSession (GetSessionRequest) returns (Session);
   rpc Subscribe (SubscribeRequest) returns (stream SessionEvent);
-  rpc SubmitRequest (SubmitRequestPayload) returns (ApprovalRequest);
-  rpc SubmitDecision (SubmitDecisionPayload) returns (ApprovalRequest);
+  rpc SubmitProposal (SubmitProposalPayload) returns (Proposal);
+  rpc SubmitDecision (SubmitDecisionPayload) returns (Proposal);
 }
 
 message CreateSessionRequest {}
 message GetSessionRequest { string session_id = 1; }
 message SubscribeRequest { string session_id = 1; string client_id = 2; }
-message SubmitRequestPayload { string session_id = 1; string text = 2; }
-message SubmitDecisionPayload { string session_id = 1; string request_id = 2; bool approved = 3; }
+message SubmitProposalPayload { string session_id = 1; string text = 2; }
+message SubmitDecisionPayload { string session_id = 1; string proposal_id = 2; bool approved = 3; }
 ```
 
 #### 2.2 Create Proto Generation Script
@@ -717,7 +717,7 @@ echo "*.log" >> logs/.gitignore
 ### Verification Checklist
 - [ ] `./scripts/check_quality.sh` passes
 - [ ] `./scripts/gen_protos.sh` generates Python code in `rpc_stream_prototype/generated/`
-- [ ] `python -c "from rpc_stream_prototype.generated.approval.v1 import approval_service"` succeeds
+- [ ] `python -c "from rpc_stream_prototype.generated.proposal.v1 import approval_service"` succeeds
 - [ ] `docker compose build` completes successfully
 - [ ] `docker compose up` starts all three services (backend, frontend, envoy)
 - [ ] Backend stub prints "Server starting..." in logs
@@ -737,7 +737,7 @@ rpc_stream_prototype/backend/
 ├── main.py                    # Server entry point
 ├── services/
 │   ├── __init__.py
-│   └── approval_service.py    # ApprovalServiceBase implementation
+│   └── proposal_service.py    # ProposalServiceBase implementation
 ├── storage/
 │   ├── __init__.py
 │   ├── repository.py          # SessionRepository interface
@@ -756,8 +756,8 @@ rpc_stream_prototype/backend/
 **File**: `rpc_stream_prototype/backend/models/domain.py`
 
 Implement domain models with:
-- `RequestStatus` enum: PENDING, APPROVED, REJECTED
-- `ApprovalRequest` dataclass: request_id, session_id, text, status, created_at; factory method `create()`
+- `ProposalStatus` enum: PENDING, APPROVED, REJECTED
+- `Proposal` dataclass: proposal_id, session_id, text, status, created_at; factory method `create()`
 - `Session` dataclass: session_id, requests list; factory method `create()`, helper `get_pending_requests()`
 
 #### 3.2 Create Repository Interface and In-Memory Implementation
@@ -766,8 +766,8 @@ Implement domain models with:
 Define `SessionRepository` ABC with methods:
 - `create_session() -> Session`
 - `get_session(session_id) -> Optional[Session]`
-- `add_request(session_id, request) -> ApprovalRequest`
-- `update_request(session_id, request_id, approved) -> Optional[ApprovalRequest]`
+- `add_request(session_id, request) -> Proposal`
+- `update_request(session_id, proposal_id, approved) -> Optional[Proposal]`
 
 **File**: `rpc_stream_prototype/backend/storage/memory_store.py`
 
@@ -804,8 +804,8 @@ class EventBroadcaster:
         ...
 ```
 
-#### 3.4 Implement ApprovalService
-**File**: `rpc_stream_prototype/backend/services/approval_service.py`
+#### 3.4 Implement ProposalService
+**File**: `rpc_stream_prototype/backend/services/proposal_service.py`
 
 Implement all RPC methods:
 
@@ -814,7 +814,7 @@ Implement all RPC methods:
 | `CreateSession` | Unary | Generate UUID, store session, return Session | FR-001, FR-002 |
 | `GetSession` | Unary | Lookup by ID, return Session or raise NOT_FOUND | FR-002 |
 | `Subscribe` | Server-Stream | Replay history, then stream new events | FR-003, FR-004, FR-005, FR-006 |
-| `SubmitRequest` | Unary | Validate, create request, broadcast, return request | FR-004, FR-006a |
+| `SubmitProposal` | Unary | Validate, create request, broadcast, return request | FR-004, FR-006a |
 | `SubmitDecision` | Unary | Validate, update status, broadcast, return request | FR-005 |
 
 #### 3.5 Implement Logging
@@ -836,7 +836,7 @@ Log events:
 ```python
 import asyncio
 from grpclib.server import Server
-from rpc_stream_prototype.backend.services.approval_service import ApprovalServiceImpl
+from rpc_stream_prototype.backend.services.approval_service import ProposalServiceImpl
 from rpc_stream_prototype.backend.storage.memory_store import InMemorySessionRepository
 from rpc_stream_prototype.backend.events.broadcaster import EventBroadcaster
 from rpc_stream_prototype.backend.logging import configure_logging
@@ -846,7 +846,7 @@ async def serve() -> None:
     
     repository = InMemorySessionRepository()
     broadcaster = EventBroadcaster()
-    service = ApprovalServiceImpl(repository, broadcaster)
+    service = ProposalServiceImpl(repository, broadcaster)
     
     server = Server([service])
     await server.start("0.0.0.0", 50051)
@@ -877,7 +877,7 @@ These fakes MUST be reusable across all backend unit tests.
 | `test_domain.py` | Domain model creation, state transitions |
 | `test_memory_store.py` | Repository operations, concurrency |
 | `test_broadcaster.py` | Subscribe/unsubscribe, event delivery |
-| `test_approval_service.py` | All RPC methods, error cases (uses shared fakes from `tests/fixtures/`) |
+| `test_proposal_service.py` | All RPC methods, error cases (uses shared fakes from `tests/fixtures/`) |
 
 #### 3.9 Write Integration Tests
 **Directory**: `tests/integration/`
@@ -908,7 +908,7 @@ These fakes MUST be reusable across all backend unit tests.
 
 ## PR #4: Approver CLI Implementation
 
-**Goal**: Complete CLI for Approvers to start/join sessions and process approval requests.
+**Goal**: Complete CLI for Approvers to start/join sessions and process proposals.
 
 ### Architecture
 
@@ -935,12 +935,12 @@ rpc_stream_prototype/cli/
 
 ```python
 from grpclib.client import Channel
-from rpc_stream_prototype.generated.approval.v1 import ApprovalServiceStub
+from rpc_stream_prototype.generated.proposal.v1 import ProposalServiceStub
 
-class ApprovalClient:
+class ProposalClient:
     def __init__(self, host: str = "localhost", port: int = 50051):
         self._channel = Channel(host, port)
-        self._stub = ApprovalServiceStub(self._channel)
+        self._stub = ProposalServiceStub(self._channel)
     
     async def create_session(self) -> str:
         """Create a new session and return the session ID."""
@@ -954,7 +954,7 @@ class ApprovalClient:
         """Subscribe to session events. Yields SessionEvent objects."""
         ...
     
-    async def submit_decision(self, session_id: str, request_id: str, approved: bool):
+    async def submit_decision(self, session_id: str, proposal_id: str, approved: bool):
         """Submit an approval decision."""
         ...
     
@@ -981,9 +981,9 @@ def display_waiting_state() -> None:
     """Show waiting for requests indicator."""
     console.print("[dim]Waiting for requests...[/dim]")
 
-def display_request(request_id: str, text: str) -> None:
+def display_proposal(proposal_id: str, text: str) -> None:
     """Display incoming request for approval."""
-    console.print(Panel(text, title=f"Request: {request_id[:8]}...", border_style="yellow"))
+    console.print(Panel(text, title=f"Request: {proposal_id[:8]}...", border_style="yellow"))
 
 def display_decision_sent(approved: bool) -> None:
     """Confirm decision was sent."""
@@ -1019,11 +1019,11 @@ def prompt_decision() -> bool:
 
 ```python
 import asyncio
-from rpc_stream_prototype.cli.client.grpc_client import ApprovalClient
-from rpc_stream_prototype.cli.ui.display import display_waiting_state, display_request, display_decision_sent
+from rpc_stream_prototype.cli.client.grpc_client import ProposalClient
+from rpc_stream_prototype.cli.ui.display import display_waiting_state, display_proposal, display_decision_sent
 from rpc_stream_prototype.cli.ui.prompts import prompt_decision
 
-async def run_approval_loop(client: ApprovalClient, session_id: str) -> None:
+async def run_approval_loop(client: ProposalClient, session_id: str) -> None:
     """
     Main approval processing loop.
     
@@ -1040,10 +1040,10 @@ async def run_approval_loop(client: ApprovalClient, session_id: str) -> None:
     async for event in client.subscribe(session_id, client_id):
         if event.request_created:
             request = event.request_created
-            if request.status == RequestStatus.PENDING:
-                display_request(request.request_id, request.text)
+            if request.status == ProposalStatus.PENDING:
+                display_proposal(request.proposal_id, request.text)
                 approved = prompt_decision()
-                await client.submit_decision(session_id, request.request_id, approved)
+                await client.submit_decision(session_id, request.proposal_id, approved)
                 display_decision_sent(approved)
                 display_waiting_state()
 ```
@@ -1055,7 +1055,7 @@ async def run_approval_loop(client: ApprovalClient, session_id: str) -> None:
 import asyncio
 import typer
 from rich.console import Console
-from rpc_stream_prototype.cli.client.grpc_client import ApprovalClient
+from rpc_stream_prototype.cli.client.grpc_client import ProposalClient
 from rpc_stream_prototype.cli.ui.display import display_session_id
 from rpc_stream_prototype.cli.ui.prompts import prompt_session_action, prompt_session_id
 from rpc_stream_prototype.cli.session.approval_loop import run_approval_loop
@@ -1072,7 +1072,7 @@ def main(
     asyncio.run(_main(host, port))
 
 async def _main(host: str, port: int) -> None:
-    client = ApprovalClient(host, port)
+    client = ProposalClient(host, port)
     
     try:
         action = prompt_session_action()
@@ -1114,9 +1114,9 @@ This fake MUST be reusable across CLI unit tests and avoid real network calls.
 
 | Test File | Coverage |
 |-----------|----------|
-| `test_grpc_client.py` | Client wrapper methods (uses `FakeApprovalClient` from `tests/fixtures/`) |
+| `test_grpc_client.py` | Client wrapper methods (uses `FakeProposalClient` from `tests/fixtures/`) |
 | `test_prompts.py` | Input validation, choice handling |
-| `test_approval_loop.py` | Event processing, decision flow (uses `FakeApprovalClient`) |
+| `test_approval_loop.py` | Event processing, decision flow (uses `FakeProposalClient`) |
 
 #### 4.7 Write Integration Tests
 **Directory**: `tests/integration/`
@@ -1212,17 +1212,17 @@ Add script to `frontend/package.json`:
 import { Injectable } from '@angular/core';
 import { createGrpcWebTransport } from '@connectrpc/connect-web';
 import { createClient } from '@connectrpc/connect';
-import { ApprovalService } from '../../../generated/approval_service_connect';
+import { ProposalService } from '../../../generated/proposal_service_connect';
 import { Observable, Subject } from 'rxjs';
 import { SessionEvent } from '../../../generated/session_pb';
 
 @Injectable({ providedIn: 'root' })
-export class ApprovalServiceClient {
+export class ProposalServiceClient {
   private transport = createGrpcWebTransport({
     baseUrl: 'http://localhost:8080',
   });
   
-  private client = createClient(ApprovalService, this.transport);
+  private client = createClient(ProposalService, this.transport);
   
   async getSession(sessionId: string): Promise<Session | null> {
     try {
@@ -1248,7 +1248,7 @@ export class ApprovalServiceClient {
     return subject.asObservable();
   }
   
-  async submitRequest(sessionId: string, text: string): Promise<ApprovalRequest> {
+  async submitRequest(sessionId: string, text: string): Promise<Proposal> {
     return await this.client.submitRequest({ sessionId, text });
   }
 }
@@ -1259,14 +1259,14 @@ export class ApprovalServiceClient {
 
 ```typescript
 import { Injectable, signal, computed } from '@angular/core';
-import { ApprovalRequest, RequestStatus } from '../../../generated/approval_request_pb';
+import { Proposal, ProposalStatus } from '../../../generated/proposal_request_pb';
 
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
 
 @Injectable({ providedIn: 'root' })
 export class SessionStateService {
   private _sessionId = signal<string | null>(null);
-  private _requests = signal<ApprovalRequest[]>([]);
+  private _requests = signal<Proposal[]>([]);
   private _connectionState = signal<ConnectionState>('disconnected');
   
   // Public readable signals
@@ -1276,7 +1276,7 @@ export class SessionStateService {
   
   // Computed signals
   hasPendingRequest = computed(() => 
-    this._requests().some(r => r.status === RequestStatus.PENDING)
+    this._requests().some(r => r.status === ProposalStatus.PENDING)
   );
   
   canSubmit = computed(() => 
@@ -1287,11 +1287,11 @@ export class SessionStateService {
   setSessionId(id: string) { this._sessionId.set(id); }
   setConnectionState(state: ConnectionState) { this._connectionState.set(state); }
   
-  addRequest(request: ApprovalRequest) {
+  addRequest(request: Proposal) {
     this._requests.update(requests => [...requests, request]);
   }
   
-  updateRequest(request: ApprovalRequest) {
+  updateRequest(request: Proposal) {
     this._requests.update(requests => 
       requests.map(r => r.requestId === request.requestId ? request : r)
     );
@@ -1316,7 +1316,7 @@ export class SessionStateService {
 })
 export class JoinSessionComponent {
   private router = inject(Router);
-  private approvalService = inject(ApprovalServiceClient);
+  private approvalService = inject(ProposalServiceClient);
   
   sessionIdControl = new FormControl('', [Validators.required, Validators.pattern(/^[0-9a-f-]{36}$/i)]);
   error = signal<string | null>(null);
@@ -1358,7 +1358,7 @@ Main session view with:
 })
 export class SessionComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
-  private approvalService = inject(ApprovalServiceClient);
+  private approvalService = inject(ProposalServiceClient);
   private sessionState = inject(SessionStateService);
   private destroyRef = inject(DestroyRef);
   
@@ -1410,7 +1410,7 @@ Display chronological list of requests with status badges (Pending/Approved/Reje
   imports: [MatFormField, MatInput, MatButton, ReactiveFormsModule]
 })
 export class RequestFormComponent {
-  private approvalService = inject(ApprovalServiceClient);
+  private approvalService = inject(ProposalServiceClient);
   private sessionState = inject(SessionStateService);
   
   textControl = new FormControl('', Validators.required);

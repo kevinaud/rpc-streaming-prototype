@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/devcontainers/python:3.14
 # Backup-Restore Pattern for Dev Container Dependencies
 # ============================================================
 # - Dependencies are installed at build time for caching
-# - node_modules is backed up to /opt/backup (survives mount)
+# - frontend/node_modules is backed up to /opt/backup (survives mount)
 # - init.sh restores from backup after workspace mount
 # ============================================================
 
@@ -15,15 +15,18 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 ENV UV_LINK_MODE=copy
 ENV UV_CACHE_DIR=/opt/uv-cache
 
-# Install Node.js and npm via apt-get (instead of devcontainer feature)
+# Install Node.js and npm via apt-get (features install after Dockerfile)
 RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Angular CLI globally for workspace tooling
+# Install Angular CLI globally
 RUN npm install -g @angular/cli
+
+# Install Buf globally
+RUN npm install -g @bufbuild/buf
 
 # Create backup directory for node_modules
 RUN mkdir -p /opt/backup
@@ -31,9 +34,8 @@ RUN mkdir -p /opt/backup
 # Set working directory for dependency installation
 WORKDIR /workspace
 
-# Copy lockfiles first for dependency layer caching
+# Copy Python lockfiles first for dependency layer caching
 COPY pyproject.toml uv.loc* ./
-COPY package.json package-lock.jso* ./
 
 # Install Python dependencies (frozen if lock exists)
 RUN if [ -s uv.lock ]; then \
@@ -42,10 +44,8 @@ RUN if [ -s uv.lock ]; then \
       uv sync --no-install-project; \
     fi
 
-# Install Node dependencies and backup for restore after mount
-RUN if [ -s package.json ]; then \
-      npm install && cp -r node_modules /opt/backup/node_modules; \
-    fi
+# Copy frontend lockfiles for npm dependency layer caching
+COPY frontend/package.json frontend/package-lock.jso* ./frontend/
 
-# Copy full project for CI builds (dev container mounts over this)
-COPY . .
+# Install frontend Node dependencies and backup for restore after mount
+RUN cd frontend && npm install && cp -r node_modules /opt/backup/frontend_node_modules

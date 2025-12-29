@@ -101,13 +101,13 @@
 - [x] T024 Push branch and create PR: `git push -u origin pr1-environment-updates && gh pr create --title "PR #1: Environment Updates" --body "Implements Backup-Restore pattern for deps, Split CI workflows (Builder + Runner)"`
 - [x] T025 Monitor CI checks: `gh pr checks --watch`
 - [x] T026 Address any CI failures until checks pass
-- [ ] T027 **STOP**: Ask user to review PR #1
-- [ ] T028 Squash merge after approval: `gh pr merge --squash --delete-branch`
+- [x] T027 **STOP**: Ask user to review PR #1
+- [x] T028 Squash merge after approval: `gh pr merge --squash --delete-branch`
 
 ### Post-PR #1 Actions
 
-- [ ] T029 **USER ACTION**: Rebuild dev container before continuing
-- [ ] T030 Verify build-image.yaml triggered and pushed image to GHCR
+- [x] T029 **USER ACTION**: Rebuild dev container before continuing
+- [x] T030 Verify build-image.yaml triggered and pushed image to GHCR
 
 **Checkpoint**: Dev container uses Backup-Restore pattern. CI uses Split Workflow (Builder + Runner). User must rebuild before Phase 2.
 
@@ -119,61 +119,61 @@
 
 ### Git Setup for PR #2
 
-- [ ] T031 Sync main branch: `git checkout main && git pull origin main`
-- [ ] T032 Create feature branch: `git checkout -b pr2-boilerplate`
+- [x] T031 Sync main branch: `git checkout main && git pull origin main`
+- [x] T032 Create feature branch: `git checkout -b pr2-boilerplate`
 
 ### Proto Files [PR2]
 
-- [ ] T033 [P] [PR2] Create protos/approval_request.proto with RequestStatus enum and ApprovalRequest message
-- [ ] T034 [P] [PR2] Create protos/session.proto with Session and SessionEvent messages
-- [ ] T035 [P] [PR2] Create protos/approval_service.proto with ApprovalService definition
+- [x] T033 [P] [PR2] Create protos/proposal.proto with ProposalStatus enum and Proposal message
+- [x] T034 [P] [PR2] Create protos/session.proto with Session and SessionEvent messages
+- [x] T035 [P] [PR2] Create protos/approval_service.proto with ProposalService definition
 
 ### Proto Generation [PR2]
 
-- [ ] T036 [PR2] Create scripts/gen_protos.sh for betterproto code generation
-- [ ] T037 [PR2] Run gen_protos.sh and verify rpc_stream_prototype/generated/ is created
-- [ ] T038 [PR2] Add __init__.py files to generated/approval/ directories
+- [x] T036 [PR2] Create scripts/gen_protos.sh for betterproto code generation
+- [x] T037 [PR2] Run gen_protos.sh and verify rpc_stream_prototype/generated/ is created
+- [x] T038 [PR2] Add __init__.py files to generated/proposal/ directories
 
 ### Python Package Restructure [PR2]
 
-- [ ] T039 [PR2] Create rpc_stream_prototype/backend/__init__.py
-- [ ] T040 [PR2] Create rpc_stream_prototype/backend/main.py with stub serve() function
-- [ ] T041 [PR2] Create rpc_stream_prototype/backend/services/__init__.py
-- [ ] T042 [PR2] Create rpc_stream_prototype/cli/main.py with stub typer commands (start, join)
-- [ ] T043 [PR2] Create rpc_stream_prototype/cli/ui/__init__.py
-- [ ] T044 [PR2] Create rpc_stream_prototype/shared/__init__.py
-- [ ] T045 [PR2] Move logging_config.py to rpc_stream_prototype/shared/logging_config.py
-- [ ] T046 [PR2] Update pyproject.toml with new entry points (rpc-server, rpc-cli)
-- [ ] T047 [PR2] Remove old rpc_stream_prototype/cli/app.py and update imports
+- [x] T039 [PR2] Create rpc_stream_prototype/backend/__init__.py
+- [x] T040 [PR2] Create rpc_stream_prototype/backend/main.py with stub serve() function
+- [x] T041 [PR2] Create rpc_stream_prototype/backend/services/__init__.py
+- [x] T042 [PR2] Create rpc_stream_prototype/cli/main.py with stub typer commands (start, join)
+- [x] T043 [PR2] Create rpc_stream_prototype/cli/ui/__init__.py
+- [x] T044 [PR2] Create rpc_stream_prototype/shared/__init__.py
+- [x] T045 [PR2] Move logging_config.py to rpc_stream_prototype/shared/logging_config.py
+- [x] T046 [PR2] Update pyproject.toml with new entry points (rpc-server, rpc-cli)
+- [x] T047 [PR2] Remove old rpc_stream_prototype/cli/app.py and update imports
 
 ### Angular Scaffold [PR2]
 
-- [ ] T048 [PR2] Run `ng new frontend --routing --style=scss --skip-git --package-manager=npm` in frontend/ directory
-- [ ] T049 [PR2] Install Angular dependencies: `cd frontend && npm install @angular/material @angular/cdk`
-- [ ] T050 [PR2] Install Connect-ES dependencies: `npm install @connectrpc/connect @connectrpc/connect-web @bufbuild/protobuf`
-- [ ] T051 [PR2] Configure angular.json with poll option for Docker/WSL compatibility
+- [x] T048 [PR2] Run `ng new frontend --routing --style=scss --skip-git --package-manager=npm` in frontend/ directory
+- [x] T049 [PR2] Install Angular dependencies: `cd frontend && npm install @angular/material @angular/cdk`
+- [x] T050 [PR2] Install Connect-ES dependencies: `npm install @connectrpc/connect @connectrpc/connect-web @bufbuild/protobuf`
+- [x] T051 [PR2] Configure angular.json with poll option for Docker/WSL compatibility
 
 ### Docker Configuration [PR2]
 
-- [ ] T052 [PR2] Create docker/backend.Dockerfile with Python 3.14, uv, watchfiles
-- [ ] T053 [PR2] Create docker/frontend.Dockerfile with Node 22
-- [ ] T054 [PR2] Create docker-compose.yaml with backend, frontend, envoy services
-- [ ] T055 [PR2] Create envoy/envoy.yaml with gRPC-Web to gRPC proxy configuration
+- [x] T052 [PR2] Create docker/backend.Dockerfile with Python 3.14, uv, watchfiles
+- [x] T053 [PR2] Create docker/frontend.Dockerfile with Node 22
+- [x] T054 [PR2] Create docker-compose.yaml with backend, frontend, envoy services
+- [x] T055 [PR2] Create envoy/envoy.yaml with gRPC-Web to gRPC proxy configuration
 
 ### Project Setup [PR2]
 
-- [ ] T056 [PR2] Create logs/.gitkeep and logs/.gitignore (ignore *.log)
-- [ ] T057 [PR2] Update .gitignore with generated/, node_modules/, logs/*.log
-- [ ] T058 [PR2] Create tests/fixtures/__init__.py (shared test fixtures directory per Constitution)
+- [x] T056 [PR2] Create logs/.gitkeep and logs/.gitignore (ignore *.log)
+- [x] T057 [PR2] Update .gitignore with generated/, node_modules/, logs/*.log
+- [x] T058 [PR2] Create tests/fixtures/__init__.py (shared test fixtures directory per Constitution)
 
 ### Verification for PR #2
 
-- [ ] T059 [PR2] Verify `python -c "from rpc_stream_prototype.generated.approval.v1 import *"` succeeds
-- [ ] T060 [PR2] Verify `docker compose build` completes successfully
-- [ ] T061 [PR2] Verify `docker compose up` starts all three services
-- [ ] T062 [PR2] Verify frontend accessible at http://localhost:4200
-- [ ] T063 [PR2] Verify Envoy listening on port 8080
-- [ ] T064 [PR2] Verify `./scripts/check_quality.sh` passes
+- [x] T059 [PR2] Verify `python -c "from rpc_stream_prototype.generated.proposal.v1 import *"` succeeds
+- [x] T060 [PR2] Verify `docker compose build` completes successfully
+- [x] T061 [PR2] Verify `docker compose up` starts all three services
+- [x] T062 [PR2] Verify frontend accessible at http://localhost:4200
+- [x] T063 [PR2] Verify Envoy listening on port 8080
+- [x] T064 [PR2] Verify `./scripts/check_quality.sh` passes
 
 ### Git Workflow for PR #2
 
@@ -199,7 +199,7 @@
 ### Domain Models [PR3]
 
 - [ ] T072 [PR3] Create rpc_stream_prototype/backend/models/__init__.py
-- [ ] T073 [PR3] Create rpc_stream_prototype/backend/models/domain.py with RequestStatus enum, ApprovalRequest, Session dataclasses
+- [ ] T073 [PR3] Create rpc_stream_prototype/backend/models/domain.py with ProposalStatus enum, Proposal, Session dataclasses
 
 ### Storage Layer [PR3]
 
@@ -218,11 +218,11 @@
 
 ### gRPC Service [PR3]
 
-- [ ] T080 [PR3] Create rpc_stream_prototype/backend/services/approval_service.py with ApprovalServiceImpl
+- [ ] T080 [PR3] Create rpc_stream_prototype/backend/services/proposal_service.py with ProposalServiceImpl
 - [ ] T081 [PR3] Implement CreateSession RPC (FR-001, FR-002)
 - [ ] T082 [PR3] Implement GetSession RPC (FR-002)
 - [ ] T083 [PR3] Implement Subscribe RPC with history replay + live streaming (FR-003, FR-004, FR-005, FR-006)
-- [ ] T084 [PR3] Implement SubmitRequest RPC with FIFO queuing (FR-004, FR-006a)
+- [ ] T084 [PR3] Implement SubmitProposal RPC with FIFO queuing (FR-004, FR-006a)
 - [ ] T085 [PR3] Implement SubmitDecision RPC (FR-005)
 
 ### Server Entry Point [PR3]
@@ -240,7 +240,7 @@
 - [ ] T090 [P] [PR3] Create tests/unit/backend/test_domain.py (model creation, state transitions)
 - [ ] T091 [P] [PR3] Create tests/unit/backend/test_memory_store.py (repository operations, concurrency)
 - [ ] T092 [P] [PR3] Create tests/unit/backend/test_broadcaster.py (subscribe/unsubscribe, event delivery)
-- [ ] T093 [P] [PR3] Create tests/unit/backend/test_approval_service.py using FakeSessionRepository and FakeBroadcaster
+- [ ] T093 [P] [PR3] Create tests/unit/backend/test_proposal_service.py using FakeSessionRepository and FakeBroadcaster
 
 ### Integration Tests [PR3]
 
@@ -269,7 +269,7 @@
 
 ## Phase 4: PR #4 - Approver CLI Implementation
 
-**Goal**: Complete CLI for Approvers to start/join sessions and process approval requests.
+**Goal**: Complete CLI for Approvers to start/join sessions and process proposals.
 
 ### Git Setup for PR #4
 
@@ -279,12 +279,12 @@
 ### gRPC Client [PR4]
 
 - [ ] T108 [PR4] Create rpc_stream_prototype/cli/client/__init__.py
-- [ ] T109 [PR4] Create rpc_stream_prototype/cli/client/grpc_client.py with ApprovalClient wrapper
+- [ ] T109 [PR4] Create rpc_stream_prototype/cli/client/grpc_client.py with ProposalClient wrapper
 
 ### UI Components [PR4]
 
 - [ ] T110 [P] [PR4] Create rpc_stream_prototype/cli/ui/console.py with Rich console setup
-- [ ] T111 [P] [PR4] Create rpc_stream_prototype/cli/ui/display.py (display_session_id, display_waiting_state, display_request, display_decision_sent)
+- [ ] T111 [P] [PR4] Create rpc_stream_prototype/cli/ui/display.py (display_session_id, display_waiting_state, display_proposal, display_decision_sent)
 - [ ] T112 [P] [PR4] Create rpc_stream_prototype/cli/ui/prompts.py (prompt_session_action, prompt_session_id, prompt_decision)
 
 ### Session Management [PR4]
@@ -298,14 +298,14 @@
 
 ### Shared Test Fixtures [PR4]
 
-- [ ] T116 [PR4] Create tests/fixtures/fake_approval_client.py with FakeApprovalClient (canned responses, state-verifiable per Constitution)
+- [ ] T116 [PR4] Create tests/fixtures/fake_approval_client.py with FakeProposalClient (canned responses, state-verifiable per Constitution)
 
 ### Unit Tests [PR4]
 
 - [ ] T117 [P] [PR4] Create tests/unit/cli/__init__.py
-- [ ] T118 [P] [PR4] Create tests/unit/cli/test_grpc_client.py using FakeApprovalClient (no network calls)
+- [ ] T118 [P] [PR4] Create tests/unit/cli/test_grpc_client.py using FakeProposalClient (no network calls)
 - [ ] T119 [P] [PR4] Create tests/unit/cli/test_prompts.py (input validation, choice handling)
-- [ ] T120 [P] [PR4] Create tests/unit/cli/test_approval_loop.py using FakeApprovalClient (event processing, decision flow)
+- [ ] T120 [P] [PR4] Create tests/unit/cli/test_approval_loop.py using FakeProposalClient (event processing, decision flow)
 
 ### Integration Tests [PR4]
 
