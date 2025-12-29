@@ -9,7 +9,6 @@
       "enableNonRootDocker": "true",
       "moby": false
     },
-    "ghcr.io/devcontainers/features/node:1": {},
     "ghcr.io/devcontainers-extra/features/uv:1": {},
     "ghcr.io/devcontainers-extra/features/prettier:1": {},
     "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {

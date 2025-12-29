@@ -15,6 +15,16 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 ENV UV_LINK_MODE=copy
 ENV UV_CACHE_DIR=/opt/uv-cache
 
+# Install Node.js and npm via apt-get (features install after Dockerfile)
+RUN apt-get update && apt-get install -y \
+    nodejs \
+    npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Angular CLI globally
+RUN npm install -g @angular/cli
+
 # Create backup directory for node_modules
 RUN mkdir -p /opt/backup
 
@@ -31,5 +41,8 @@ RUN if [ -s uv.lock ]; then \
       uv sync --no-install-project; \
     fi
 
-# Copy full project for CI builds (dev container mounts over this)
-COPY . .
+# Copy frontend lockfiles for npm dependency layer caching
+COPY frontend/package.json frontend/package-lock.jso* ./frontend/
+
+# Install frontend Node dependencies and backup for restore after mount
+RUN cd frontend && npm install && cp -r node_modules /opt/backup/frontend_node_modules
