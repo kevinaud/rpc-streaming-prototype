@@ -323,9 +323,9 @@
 
 ### Git Workflow for PR #4
 
-- [ ] T129 Push branch and create PR: `git push -u origin pr4-cli-implementation && gh pr create --title "PR #4: Proposer CLI Implementation" --body "Full CLI with gRPC client, Rich UI components, proposal submission loop, and tests"`
-- [ ] T130 Monitor CI checks: `gh pr checks --watch`
-- [ ] T131 Address any CI failures until checks pass
+- [x] T129 Push branch and create PR: `git push -u origin pr4-cli-implementation && gh pr create --title "PR #4: Proposer CLI Implementation" --body "Full CLI with gRPC client, Rich UI components, proposal submission loop, and tests"`
+- [x] T130 Monitor CI checks: `gh pr checks --watch`
+- [x] T131 Address any CI failures until checks pass
 - [ ] T132 **STOP**: Ask user to review PR #4
 - [ ] T133 Squash merge after approval: `gh pr merge --squash --delete-branch`
 
