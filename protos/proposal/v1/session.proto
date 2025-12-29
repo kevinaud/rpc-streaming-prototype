@@ -1,0 +1,21 @@
+syntax = "proto3";
+package proposal.v1;
+
+import "proposal/v1/proposal.proto";
+
+// A shared session between an agent and a human reviewer.
+message Session {
+  // Unique identifier for this session.
+  string session_id = 1;
+}
+
+// An event that occurred within a session, streamed to subscribers.
+message SessionEvent {
+  // The type of event.
+  oneof event {
+    // A new proposal was created.
+    Proposal proposal_created = 1;
+    // An existing proposal was updated.
+    Proposal proposal_updated = 2;
+  }
+}

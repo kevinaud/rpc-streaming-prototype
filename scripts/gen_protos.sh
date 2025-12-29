@@ -18,14 +18,14 @@ uv run python -m grpc_tools.protoc \
   -I "$PROTO_DIR" \
   -I "$(uv run python -c 'import grpc_tools; print(grpc_tools.__path__[0])')/_proto" \
   --python_betterproto_out="$PYTHON_OUT" \
-  "$PROTO_DIR"/*.proto
+  $(find "$PROTO_DIR" -name "*.proto")
 
 # Create root __init__.py
 touch "$PYTHON_OUT/__init__.py"
 
-# Format generated code
+# Format generated code with ruff
 echo "🎨 Formatting generated code..."
-uv run ruff check --fix "$PYTHON_OUT" || true
+uv run ruff check --fix "$PYTHON_OUT" 2>/dev/null || true
 uv run ruff format "$PYTHON_OUT"
 
 echo "✅ Proto generation complete: $PYTHON_OUT"

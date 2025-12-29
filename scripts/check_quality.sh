@@ -18,6 +18,31 @@ echo "  Code Quality Checks"
 echo "========================================"
 
 # ============================================================
+# Proto Linting & Formatting
+# ============================================================
+echo ""
+echo "----------------------------------------"
+echo "  Proto Linting & Formatting"
+echo "----------------------------------------"
+
+# Check if buf is installed
+if ! command -v buf &> /dev/null; then
+    echo "⚠️  'buf' is not installed. Skipping proto checks."
+    echo "   Install via npm: npm install -g @bufbuild/buf"
+else
+    echo "Running Buf Lint..."
+    # Lints the protos directory based on buf.yaml rules
+    buf lint
+
+    echo "Running Buf Format (Check)..."
+    # --diff: Shows the difference
+    # --exit-code: Fails the script if changes are needed
+    buf format --diff --exit-code
+    
+    echo "✅ Proto static analysis passed!"
+fi
+
+# ============================================================
 # Proto Generation Check
 # ============================================================
 echo ""

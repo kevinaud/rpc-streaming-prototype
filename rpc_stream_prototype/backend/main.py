@@ -6,12 +6,12 @@ from grpclib.reflection.service import ServerReflection
 from grpclib.server import Server
 from grpclib.utils import graceful_exit
 
-from rpc_stream_prototype.backend.services.approval_service import ApprovalService
+from rpc_stream_prototype.backend.services.proposal_service import ProposalService
 
 
 async def main():
   # 1. Instantiate your services
-  services = [ApprovalService()]
+  services = [ProposalService()]
 
   # 2. Enable Reflection
   # This takes your list of services and adds the special Reflection service to it

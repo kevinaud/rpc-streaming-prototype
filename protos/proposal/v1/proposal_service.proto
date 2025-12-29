@@ -1,0 +1,84 @@
+syntax = "proto3";
+package proposal.v1;
+
+import "proposal/v1/proposal.proto";
+import "proposal/v1/session.proto";
+
+// Service for managing proposal workflow sessions.
+service ProposalService {
+  // Creates a new session.
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+  // Retrieves an existing session by ID.
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+  // Subscribes to real-time events for a session.
+  rpc Subscribe(SubscribeRequest) returns (stream SubscribeResponse);
+  // Submits a new proposal within a session.
+  rpc SubmitProposal(SubmitProposalRequest) returns (SubmitProposalResponse);
+  // Submits a decision (approve/reject) for a pending proposal.
+  rpc SubmitDecision(SubmitDecisionRequest) returns (SubmitDecisionResponse);
+}
+
+// Request to create a new session.
+message CreateSessionRequest {}
+
+// Response containing the created session.
+message CreateSessionResponse {
+  // The newly created session.
+  Session session = 1;
+}
+
+// Request to get a session by ID.
+message GetSessionRequest {
+  // The session ID to retrieve.
+  string session_id = 1;
+}
+
+// Response containing the requested session.
+message GetSessionResponse {
+  // The requested session.
+  Session session = 1;
+}
+
+// Request to subscribe to session events.
+message SubscribeRequest {
+  // The session ID to subscribe to.
+  string session_id = 1;
+  // The client ID for this subscriber.
+  string client_id = 2;
+}
+
+// Response containing a session event.
+message SubscribeResponse {
+  // The session event.
+  SessionEvent event = 1;
+}
+
+// Request to submit a new proposal.
+message SubmitProposalRequest {
+  // The session ID to submit the proposal to.
+  string session_id = 1;
+  // The text content of the proposal.
+  string text = 2;
+}
+
+// Response containing the created proposal.
+message SubmitProposalResponse {
+  // The created proposal.
+  Proposal proposal = 1;
+}
+
+// Request to submit a decision on a proposal.
+message SubmitDecisionRequest {
+  // The session ID containing the proposal.
+  string session_id = 1;
+  // The proposal ID to decide on.
+  string proposal_id = 2;
+  // Whether to approve (true) or reject (false).
+  bool approved = 3;
+}
+
+// Response containing the updated proposal.
+message SubmitDecisionResponse {
+  // The updated proposal.
+  Proposal proposal = 1;
+}

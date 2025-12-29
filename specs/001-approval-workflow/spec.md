@@ -19,13 +19,13 @@ As an Approver, I want to start a new approval session from the CLI so that I ca
 
 1. **Given** the Coordination Service is running, **When** the Approver runs the CLI and selects "start session", **Then** the system displays a newly generated Session ID (UUID format)
 2. **Given** a session has been created, **When** the Session ID is displayed, **Then** the Approver can copy/share this ID with a Requester
-3. **Given** a session is started, **When** the CLI enters the approval loop, **Then** it displays a waiting state indicating it's ready to receive requests
+3. **Given** a session is started, **When** the CLI enters the approval loop, **Then** it displays a waiting state indicating it's ready to receive proposals
 
 ---
 
 ### User Story 2 - Requester Joins Session and Views History (Priority: P1)
 
-As a Requester, I want to join an existing session using a Session ID so that I can submit approval requests and see the session history.
+As a Requester, I want to join an existing session using a Session ID so that I can submit proposals and see the session history.
 
 **Why this priority**: This enables the second actor to participate, completing the two-party communication requirement. Equal priority with US1 as both are needed for basic functionality.
 
@@ -34,43 +34,43 @@ As a Requester, I want to join an existing session using a Session ID so that I 
 **Acceptance Scenarios**:
 
 1. **Given** the web application is loaded, **When** the user enters a valid Session ID and submits, **Then** the application connects to the session and displays the session view
-2. **Given** a session has previous requests and decisions, **When** the Requester joins, **Then** all historical requests with their outcomes (Approved/Rejected) are displayed in chronological order
-3. **Given** a new session with no history, **When** the Requester joins, **Then** an empty history is shown with an enabled input field for new requests
+2. **Given** a session has previous proposals and decisions, **When** the Requester joins, **Then** all historical proposals with their outcomes (Approved/Rejected) are displayed in chronological order
+3. **Given** a new session with no history, **When** the Requester joins, **Then** an empty history is shown with an enabled input field for new proposals
 4. **Given** an invalid Session ID is entered, **When** the user attempts to join, **Then** an error message is displayed indicating the session does not exist
 
 ---
 
-### User Story 3 - Requester Submits Request (Priority: P2)
+### User Story 3 - Requester Submits Proposal (Priority: P2)
 
-As a Requester, I want to submit a text request for approval so that the Approver can review and decide on it.
+As a Requester, I want to submit a text proposal for approval so that the Approver can review and decide on it.
 
 **Why this priority**: Enables the core submission flow, but depends on session joining (US2) being functional first.
 
-**Independent Test**: Can be tested by joining a session, typing text in the input field, and submitting. Verifies the request appears in the pending state.
+**Independent Test**: Can be tested by joining a session, typing text in the input field, and submitting. Verifies the proposal appears in the pending state.
 
 **Acceptance Scenarios**:
 
-1. **Given** a Requester is connected to a session with an enabled input field, **When** they type text and submit, **Then** the request is sent to the Coordination Service
-2. **Given** a request is submitted, **When** the submission is acknowledged, **Then** the input field becomes disabled and a "waiting for approval" indicator is shown
-3. **Given** a request is pending, **When** the Requester attempts to submit another request, **Then** the submission is blocked (input field remains disabled)
-4. **Given** a request is submitted, **When** the Approver is connected, **Then** the request text appears on the Approver's CLI
+1. **Given** a Requester is connected to a session with an enabled input field, **When** they type text and submit, **Then** the proposal is sent to the Coordination Service
+2. **Given** a proposal is submitted, **When** the submission is acknowledged, **Then** the input field becomes disabled and a "waiting for approval" indicator is shown
+3. **Given** a proposal is pending, **When** the Requester attempts to submit another proposal, **Then** the submission is blocked (input field remains disabled)
+4. **Given** a proposal is submitted, **When** the Approver is connected, **Then** the proposal text appears on the Approver's CLI
 
 ---
 
 ### User Story 4 - Approver Reviews and Decides (Priority: P2)
 
-As an Approver, I want to review incoming requests and make approve/reject decisions so that Requesters receive timely responses.
+As an Approver, I want to review incoming proposals and make approve/reject decisions so that Requesters receive timely responses.
 
-**Why this priority**: Completes the approval workflow cycle. Depends on request submission (US3) being functional.
+**Why this priority**: Completes the approval workflow cycle. Depends on proposal submission (US3) being functional.
 
-**Independent Test**: Can be tested by having a pending request arrive, displaying it, and entering 'y' or 'n' to see the decision recorded.
+**Independent Test**: Can be tested by having a pending proposal arrive, displaying it, and entering 'y' or 'n' to see the decision recorded.
 
 **Acceptance Scenarios**:
 
-1. **Given** the Approver CLI is in waiting state, **When** a new request arrives, **Then** the request text is displayed clearly to the Approver
-2. **Given** a request is displayed, **When** the Approver enters 'y', **Then** an "Approved" decision is sent to the server
-3. **Given** a request is displayed, **When** the Approver enters 'n', **Then** a "Rejected" decision is sent to the server
-4. **Given** a decision is sent, **When** the server acknowledges it, **Then** the CLI returns to the waiting state for the next request
+1. **Given** the Approver CLI is in waiting state, **When** a new proposal arrives, **Then** the proposal text is displayed clearly to the Approver
+2. **Given** a proposal is displayed, **When** the Approver enters 'y', **Then** an "Approved" decision is sent to the server
+3. **Given** a proposal is displayed, **When** the Approver enters 'n', **Then** a "Rejected" decision is sent to the server
+4. **Given** a decision is sent, **When** the server acknowledges it, **Then** the CLI returns to the waiting state for the next proposal
 
 ---
 
@@ -84,10 +84,10 @@ As a Requester, I want to see the Approver's decision in real-time without refre
 
 **Acceptance Scenarios**:
 
-1. **Given** a Requester has a pending request, **When** the Approver approves it, **Then** the Requester's UI automatically updates to show "Approved" without page refresh
-2. **Given** a Requester has a pending request, **When** the Approver rejects it, **Then** the Requester's UI automatically updates to show "Rejected" without page refresh
+1. **Given** a Requester has a pending proposal, **When** the Approver approves it, **Then** the Requester's UI automatically updates to show "Approved" without page refresh
+2. **Given** a Requester has a pending proposal, **When** the Approver rejects it, **Then** the Requester's UI automatically updates to show "Rejected" without page refresh
 3. **Given** a decision is received, **When** the UI updates, **Then** the decision is added to the session history log
-4. **Given** a decision is received, **When** the UI updates, **Then** the input field is re-enabled for the next request
+4. **Given** a decision is received, **When** the UI updates, **Then** the input field is re-enabled for the next proposal
 
 ---
 
@@ -102,18 +102,18 @@ As an Approver, I want to reconnect to an existing session so that I can resume 
 **Acceptance Scenarios**:
 
 1. **Given** the CLI is started, **When** the Approver selects "continue session" and enters a valid Session ID, **Then** the CLI connects to the existing session
-2. **Given** reconnection is successful, **When** the CLI enters the approval loop, **Then** any pending requests in that session are displayed for review
+2. **Given** reconnection is successful, **When** the CLI enters the approval loop, **Then** any pending proposals in that session are displayed for review
 3. **Given** an invalid Session ID is entered, **When** connection is attempted, **Then** an error message is displayed and the user can retry
 
 ---
 
 ### Edge Cases
 
-- What happens when the Approver disconnects while a request is pending? (Assumption: Request remains pending until Approver reconnects)
+- What happens when the Approver disconnects while a proposal is pending? (Assumption: Proposal remains pending until Approver reconnects)
 - What happens when the Requester disconnects while waiting for a decision? (Assumption: Decision is stored; Requester sees it upon reconnection)
 - What happens when the Coordination Service restarts? (Assumption: All sessions and history are lost; this is acceptable per in-memory requirement)
 - What happens when the Web UI loses connection to the Coordination Service? (Clarified: Display connection-lost indicator and auto-reconnect with visual feedback)
-- What happens when the Requester submits an empty request? (Assumption: Empty submissions are rejected with validation error)
+- What happens when the Requester submits an empty proposal? (Assumption: Empty submissions are rejected with validation error)
 - What happens when multiple Requesters join the same session? (Clarified: All Requesters see the same history; concurrent submissions are queued and processed FIFO by the Approver)
 
 ## Requirements *(mandatory)*
@@ -124,16 +124,16 @@ As an Approver, I want to reconnect to an existing session so that I can resume 
 - **FR-001**: Service MUST generate unique Session IDs using UUID format
 - **FR-002**: Service MUST maintain session state entirely in-memory during runtime
 - **FR-003**: Service MUST support real-time server-to-client streaming for pushing updates, combined with unary client-to-server RPCs for actions (Watch pattern)
-- **FR-004**: Service MUST relay requests from Requester to Approver without polling
+- **FR-004**: Service MUST relay proposals from Requester to Approver without polling
 - **FR-005**: Service MUST relay decisions from Approver to Requester without polling
-- **FR-006**: Service MUST persist session history (requests and decisions) for the session's lifetime
-- **FR-006a**: Service MUST queue concurrent requests from multiple Requesters and present them to the Approver sequentially (FIFO order)
+- **FR-006**: Service MUST persist session history (proposals and decisions) for the session's lifetime
+- **FR-006a**: Service MUST queue concurrent proposals from multiple Requesters and present them to the Approver sequentially (FIFO order)
 
 **Approver CLI:**
 - **FR-007**: CLI MUST provide option to start a new session
 - **FR-008**: CLI MUST provide option to continue an existing session by entering a Session ID
 - **FR-009**: CLI MUST display newly generated Session ID when starting a session
-- **FR-010**: CLI MUST display incoming request text when a request arrives
+- **FR-010**: CLI MUST display incoming proposal text when a proposal arrives
 - **FR-011**: CLI MUST accept 'y' for Approve and 'n' for Reject as decision inputs
 - **FR-012**: CLI MUST enter a blocking wait state when no requests are pending
 
@@ -141,8 +141,8 @@ As an Approver, I want to reconnect to an existing session so that I can resume 
 - **FR-013**: Web UI MUST prompt for Session ID on initial load
 - **FR-014**: Web UI MUST display session history upon successful connection
 - **FR-015**: Web UI MUST provide a text input field for submitting requests
-- **FR-016**: Web UI MUST disable the input field while a request is pending
-- **FR-017**: Web UI MUST display a waiting indicator while a request is pending
+- **FR-016**: Web UI MUST disable the input field while a proposal is pending
+- **FR-017**: Web UI MUST display a waiting indicator while a proposal is pending
 - **FR-018**: Web UI MUST update automatically when a decision is received (no page refresh)
 - **FR-019**: Web UI MUST re-enable the input field after a decision is received
 - **FR-020**: Web UI MUST display a connection-lost indicator when disconnected from the Coordination Service
@@ -152,24 +152,24 @@ As an Approver, I want to reconnect to an existing session so that I can resume 
 
 **Observability:**
 - **NFR-001**: Coordination Service MUST output info-level logs to stdout (visible in server terminal)
-- **NFR-002**: Info-level logs MUST include: client connections/disconnections, requests received, decisions made
+- **NFR-002**: Info-level logs MUST include: client connections/disconnections, proposals received, decisions made
 - **NFR-003**: Coordination Service MUST write verbose-level logs (including internal state transitions and message details) to a log file
 - **NFR-004**: Log file location SHOULD be configurable, defaulting to `./logs/coordination-service.log`
 
 ### Key Entities
 
-- **Session**: An ephemeral workspace for approval communication; identified by a unique UUID; contains a collection of Requests; exists only in-memory during service runtime
-- **Request**: A text submission from a Requester requiring a decision; belongs to exactly one Session; transitions through states: `Pending` → `Approved` | `Rejected` (two terminal states); contains the request text and decision outcome
-- **Decision**: A binary outcome (Approved/Rejected) for a Request; made by the Approver; permanently associated with its Request within the session lifetime
+- **Session**: An ephemeral workspace for approval communication; identified by a unique UUID; contains a collection of Proposals; exists only in-memory during service runtime
+- **Proposal**: A text submission from a Requester requiring a decision; belongs to exactly one Session; transitions through states: `Pending` → `Approved` | `Rejected` (two terminal states); contains the proposal text and decision outcome
+- **Decision**: A binary outcome (Approved/Rejected) for a Proposal; made by the Approver; permanently associated with its Proposal within the session lifetime
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Requester can submit a request and receive a decision within 5 seconds of the Approver making the decision (demonstrates real-time communication)
-- **SC-002**: Session history displays all requests and decisions in correct chronological order with 100% accuracy
+- **SC-001**: Requester can submit a proposal and receive a decision within 5 seconds of the Approver making the decision (demonstrates real-time communication)
+- **SC-002**: Session history displays all proposals and decisions in correct chronological order with 100% accuracy
 - **SC-003**: Users can complete the full workflow (start session → join session → submit request → receive decision) in under 2 minutes on first attempt
-- **SC-004**: Approver can process at least 10 consecutive requests in a single session without disconnection or errors
+- **SC-004**: Approver can process at least 10 consecutive proposals in a single session without disconnection or errors
 - **SC-005**: Web UI updates automatically upon decision without any user-initiated refresh action
 - **SC-006**: CLI provides clear feedback at each state transition (waiting, request received, decision sent)
 
@@ -188,7 +188,7 @@ The following are explicitly excluded from this prototype:
 - Q: What functionality should be explicitly excluded from this prototype? → A: Authentication, persistence (database), and production deployment concerns
 - Q: What states should a Request transition through? → A: Pending → Approved/Rejected (two terminal states)
 - Q: What level of logging should the Coordination Service provide? → A: Info-level to stdout (terminal), verbose-level to log file
-- Q: How should concurrent request submissions from multiple Requesters be handled? → A: Queue requests; Approver processes them sequentially (FIFO)
+- Q: How should concurrent proposal submissions from multiple Requesters be handled? → A: Queue proposals; Approver processes them sequentially (FIFO)
 - Q: How should the Web UI behave when it loses connection to the Coordination Service? → A: Display connection-lost indicator; auto-reconnect with visual feedback
 
 ## Terminology

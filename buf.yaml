@@ -1,0 +1,17 @@
+version: v2
+modules:
+  - path: protos
+    lint:
+      use:
+        - STANDARD
+        - COMMENTS                          # Everything must have comments
+        - PACKAGE_VERSION_SUFFIX           # Enforce package versioning (e.g., v1, v1beta1)
+        - RPC_REQUEST_STANDARD_NAME        # Request message must match RPC name
+        - RPC_RESPONSE_STANDARD_NAME       # Response message must match RPC name
+        - RPC_REQUEST_RESPONSE_UNIQUE      # Every RPC must have unique request/response types
+      
+      disallow_comment_ignores: true
+
+    breaking:
+      use:
+        - FILE

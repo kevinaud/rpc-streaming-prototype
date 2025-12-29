@@ -25,6 +25,9 @@ RUN apt-get update && apt-get install -y \
 # Install Angular CLI globally
 RUN npm install -g @angular/cli
 
+# Install Buf globally
+RUN npm install -g @bufbuild/buf
+
 # Create backup directory for node_modules
 RUN mkdir -p /opt/backup
 
