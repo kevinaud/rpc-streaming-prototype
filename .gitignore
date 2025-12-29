@@ -49,3 +49,4 @@ out-tsc/
 bazel-out/
 frontend/dist/
 frontend/.angular/
+rpc_stream_prototype/generated_check_tmp/

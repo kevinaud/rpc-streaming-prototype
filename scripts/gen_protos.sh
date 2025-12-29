@@ -4,9 +4,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 PROTO_DIR="$REPO_ROOT/protos"
-PYTHON_OUT="$REPO_ROOT/rpc_stream_prototype/generated"
+PYTHON_OUT="${1:-$REPO_ROOT/rpc_stream_prototype/generated}"
 
-echo "🔧 Generating Python code from proto files..."
+echo "🔧 Generating Python code from proto files to $PYTHON_OUT..."
 
 # Clean and recreate output directory
 rm -rf "$PYTHON_OUT"
