@@ -267,9 +267,9 @@
 
 ---
 
-## Phase 4: PR #4 - Approver CLI Implementation
+## Phase 4: PR #4 - Proposer CLI Implementation
 
-**Goal**: Complete CLI for Approvers to start/join sessions and process proposals.
+**Goal**: Complete CLI for Proposers to start/join sessions and submit proposals.
 
 ### Git Setup for PR #4
 
@@ -284,13 +284,13 @@
 ### UI Components [PR4]
 
 - [ ] T110 [P] [PR4] Create rpc_stream_prototype/cli/ui/console.py with Rich console setup
-- [ ] T111 [P] [PR4] Create rpc_stream_prototype/cli/ui/display.py (display_session_id, display_waiting_state, display_proposal, display_decision_sent)
-- [ ] T112 [P] [PR4] Create rpc_stream_prototype/cli/ui/prompts.py (prompt_session_action, prompt_session_id, prompt_decision)
+- [ ] T111 [P] [PR4] Create rpc_stream_prototype/cli/ui/display.py (display_session_id, display_waiting_state, display_proposal_sent, display_decision_received)
+- [ ] T112 [P] [PR4] Create rpc_stream_prototype/cli/ui/prompts.py (prompt_session_action, prompt_session_id, prompt_proposal_text)
 
 ### Session Management [PR4]
 
 - [ ] T113 [PR4] Create rpc_stream_prototype/cli/session/__init__.py
-- [ ] T114 [PR4] Create rpc_stream_prototype/cli/session/approval_loop.py with run_approval_loop function
+- [ ] T114 [PR4] Create rpc_stream_prototype/cli/session/proposal_loop.py with run_proposal_loop function
 
 ### CLI Entry Point [PR4]
 
@@ -298,14 +298,14 @@
 
 ### Shared Test Fixtures [PR4]
 
-- [ ] T116 [PR4] Create tests/fixtures/fake_approval_client.py with FakeProposalClient (canned responses, state-verifiable per Constitution)
+- [ ] T116 [PR4] Create tests/fixtures/fake_proposal_client.py with FakeProposalClient (canned responses, state-verifiable per Constitution)
 
 ### Unit Tests [PR4]
 
 - [ ] T117 [P] [PR4] Create tests/unit/cli/__init__.py
 - [ ] T118 [P] [PR4] Create tests/unit/cli/test_grpc_client.py using FakeProposalClient (no network calls)
 - [ ] T119 [P] [PR4] Create tests/unit/cli/test_prompts.py (input validation, choice handling)
-- [ ] T120 [P] [PR4] Create tests/unit/cli/test_approval_loop.py using FakeProposalClient (event processing, decision flow)
+- [ ] T120 [P] [PR4] Create tests/unit/cli/test_proposal_loop.py using FakeProposalClient (proposal submission, decision flow)
 
 ### Integration Tests [PR4]
 
@@ -318,24 +318,24 @@
 - [ ] T124 [PR4] Verify CLI starts with `rpc-cli` or `python -m rpc_stream_prototype.cli.main`
 - [ ] T125 [PR4] Verify can create session and see UUID displayed
 - [ ] T126 [PR4] Verify can continue existing session
-- [ ] T127 [PR4] Verify requests display when received and decisions are sent
+- [ ] T127 [PR4] Verify proposals are submitted and confirmations displayed, decisions are received
 - [ ] T128 [PR4] Verify `./scripts/check_quality.sh` passes
 
 ### Git Workflow for PR #4
 
-- [ ] T129 Push branch and create PR: `git push -u origin pr4-cli-implementation && gh pr create --title "PR #4: Approver CLI Implementation" --body "Full CLI with gRPC client, Rich UI components, approval loop, and tests"`
+- [ ] T129 Push branch and create PR: `git push -u origin pr4-cli-implementation && gh pr create --title "PR #4: Proposer CLI Implementation" --body "Full CLI with gRPC client, Rich UI components, proposal submission loop, and tests"`
 - [ ] T130 Monitor CI checks: `gh pr checks --watch`
 - [ ] T131 Address any CI failures until checks pass
 - [ ] T132 **STOP**: Ask user to review PR #4
 - [ ] T133 Squash merge after approval: `gh pr merge --squash --delete-branch`
 
-**Checkpoint**: CLI fully functional. Approver can start/continue sessions and process requests.
+**Checkpoint**: CLI fully functional. Proposer can start/continue sessions and submit proposals.
 
 ---
 
-## Phase 5: PR #5 - Angular App Implementation
+## Phase 5: PR #5 - Approver Web App Implementation
 
-**Goal**: Complete web application for Requesters to join sessions, submit requests, and receive real-time decisions.
+**Goal**: Complete web application for Approvers to join sessions, view proposals, and make approve/reject decisions.
 
 ### Git Setup for PR #5
 
@@ -369,8 +369,8 @@
 ### Session Feature - Child Components [PR5]
 
 - [ ] T148 [P] [PR5] Create frontend/src/app/features/session/components/history-panel/history-panel.component.ts (FR-014)
-- [ ] T149 [P] [PR5] Create frontend/src/app/features/session/components/request-form/request-form.component.ts (FR-015, FR-016, FR-017, FR-019)
-- [ ] T150 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.ts (FR-020, FR-021)
+- [ ] T149 [P] [PR5] Create frontend/src/app/features/session/components/decision-panel/decision-panel.component.ts (FR-015, FR-016, FR-017)
+- [ ] T150 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.ts (FR-019, FR-020)
 
 ### Shared Components [PR5]
 
@@ -389,7 +389,7 @@
 - [ ] T157 [P] [PR5] Create frontend/src/app/features/join-session/join-session.component.spec.ts
 - [ ] T158 [P] [PR5] Create frontend/src/app/features/session/session.component.spec.ts
 - [ ] T159 [P] [PR5] Create frontend/src/app/features/session/components/history-panel/history-panel.component.spec.ts
-- [ ] T160 [P] [PR5] Create frontend/src/app/features/session/components/request-form/request-form.component.spec.ts
+- [ ] T160 [P] [PR5] Create frontend/src/app/features/session/components/decision-panel/decision-panel.component.spec.ts
 - [ ] T161 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.spec.ts
 
 ### E2E Tests [PR5]
@@ -404,7 +404,7 @@
 - [ ] T166 [PR5] Run `cd frontend && ng e2e` - all E2E tests pass
 - [ ] T167 [PR5] Run `cd frontend && ng build` - build succeeds
 - [ ] T168 [PR5] Verify can join session via UI
-- [ ] T169 [PR5] Verify can submit request and input disables
+- [ ] T169 [PR5] Verify can see incoming proposals and approve/reject them
 - [ ] T170 [PR5] Verify real-time updates work (< 5 seconds latency per SC-001)
 - [ ] T171 [PR5] Verify history displays correctly (SC-002)
 - [ ] T172 [PR5] Verify connection status shows correctly and auto-reconnect works
@@ -412,7 +412,7 @@
 
 ### Git Workflow for PR #5
 
-- [ ] T174 Push branch and create PR: `git push -u origin pr5-angular-app && gh pr create --title "PR #5: Angular App Implementation" --body "Full Requester web UI with session joining, request submission, real-time updates, auto-reconnect, and tests"`
+- [ ] T174 Push branch and create PR: `git push -u origin pr5-angular-app && gh pr create --title "PR #5: Approver Web App Implementation" --body "Full Approver web UI with session joining, proposal review, approve/reject decisions, real-time updates, auto-reconnect, and tests"`
 - [ ] T175 Monitor CI checks: `gh pr checks --watch`
 - [ ] T176 Address any CI failures until checks pass
 - [ ] T177 **STOP**: Ask user to review PR #5
@@ -484,8 +484,8 @@ PR #4 (CLI)      PR #5 (Angular)
 | #1 | T001-T030 | 9 | Devcontainer rebuild, CI image push |
 | #2 | T031-T069 | 8 | Proto generation |
 | #3 | T070-T105 | 7 | Server must work |
-| #4 | T106-T133 | 7 | Requires PR #3 |
-| #5 | T134-T178 | 10 | Requires PR #3 |
+| #4 (Proposer CLI) | T106-T133 | 7 | Requires PR #3 |
+| #5 (Approver Web App) | T134-T178 | 10 | Requires PR #3 |
 | Final | T179-T186 | 0 | Requires all PRs |
 
 **Total Tasks**: 186  

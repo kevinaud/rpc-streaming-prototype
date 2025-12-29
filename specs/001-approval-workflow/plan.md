@@ -11,18 +11,18 @@
 ```
 ┌─────────────────┐     gRPC-Web (HTTP/1.1)     ┌─────────────┐     gRPC (HTTP/2)     ┌─────────────────┐
 │  Angular Web UI │ ◄──────────────────────────► │ Envoy Proxy │ ◄───────────────────► │  Python Backend │
-│   (Requester)   │        :8080                 │   :8080     │       :50051          │   (grpclib)     │
+│   (Approver)    │        :8080                 │   :8080     │       :50051          │   (grpclib)     │
 └─────────────────┘                              └─────────────┘                       └─────────────────┘
         ▲                                                                                      ▲
         │                                                                                      │
         │ Subscribe (Server-Side Stream)                                                       │
-        │ SubmitProposal (Unary)                                                                │
+        │ SubmitDecision (Unary)                                                               │
         │                                                                                      │
         └──────────────────────────────────────────────────────────────────────────────────────┘
                                                                                                │
                                                                                    ┌───────────┴───────────┐
                                                                                    │    Python CLI         │
-                                                                                   │    (Approver)         │
+                                                                                   │    (Proposer)         │
                                                                                    │    betterproto client │
                                                                                    └───────────────────────┘
 ```
@@ -38,7 +38,7 @@
 | 1 | Environment Updates | None | Dev container: docker-in-docker, Angular CLI, betterproto compiler |
 | 2 | Directory Layout & Boilerplate | PR #1 merged + devcontainer rebuild | Project structure, Angular scaffold, Docker Compose, Envoy, proto stub |
 | 3 | Server Implementation | PR #2 | Full backend with tests |
-| 4 | Approver CLI Implementation | PR #3 | Full CLI with tests |
+| 4 | Proposer CLI Implementation | PR #3 | Full CLI with tests |
 | 5 | Angular App Implementation | PR #3 | Full web UI with tests |
 
 ---
@@ -499,11 +499,11 @@ if __name__ == "__main__":
 """CLI entry point."""
 import typer
 
-app = typer.Typer(help="Approver CLI for real-time approval workflow")
+app = typer.Typer(help="Proposer CLI for real-time approval workflow")
 
 @app.command()
 def start():
-    """Start a new approval session."""
+    """Start a new proposal session."""
     print("CLI stub: start session")
 
 @app.command()
@@ -906,9 +906,9 @@ These fakes MUST be reusable across all backend unit tests.
 
 ---
 
-## PR #4: Approver CLI Implementation
+## PR #4: Proposer CLI Implementation
 
-**Goal**: Complete CLI for Approvers to start/join sessions and process proposals.
+**Goal**: Complete CLI for Proposers to start/join sessions and submit proposals.
 
 ### Architecture
 
@@ -922,10 +922,10 @@ rpc_stream_prototype/cli/
 │   ├── __init__.py
 │   ├── console.py         # Rich console setup
 │   ├── prompts.py         # Interactive prompts
-│   └── display.py         # Status/request display
+│   └── display.py         # Status/proposal display
 └── session/
     ├── __init__.py
-    └── approval_loop.py   # Main approval processing loop
+    └── proposal_loop.py   # Main proposal submission loop
 ```
 
 ### Tasks
@@ -954,8 +954,8 @@ class ProposalClient:
         """Subscribe to session events. Yields SessionEvent objects."""
         ...
     
-    async def submit_decision(self, session_id: str, proposal_id: str, approved: bool):
-        """Submit an approval decision."""
+    async def submit_proposal(self, session_id: str, text: str):
+        """Submit a proposal for approval."""
         ...
     
     async def close(self):
@@ -975,20 +975,20 @@ console = Console()
 
 def display_session_id(session_id: str) -> None:
     """Display session ID in a copyable format."""
-    console.print(Panel(session_id, title="Session ID", subtitle="Share with Requesters"))
+    console.print(Panel(session_id, title="Session ID", subtitle="Share with Approvers"))
 
 def display_waiting_state() -> None:
-    """Show waiting for requests indicator."""
-    console.print("[dim]Waiting for requests...[/dim]")
+    """Show waiting for decision indicator."""
+    console.print("[dim]Waiting for decision...[/dim]")
 
-def display_proposal(proposal_id: str, text: str) -> None:
-    """Display incoming request for approval."""
-    console.print(Panel(text, title=f"Request: {proposal_id[:8]}...", border_style="yellow"))
+def display_proposal_sent(proposal_id: str, text: str) -> None:
+    """Display confirmation that proposal was sent."""
+    console.print(Panel(text, title=f"Proposal Sent: {proposal_id[:8]}...", border_style="blue"))
 
-def display_decision_sent(approved: bool) -> None:
-    """Confirm decision was sent."""
+def display_decision_received(approved: bool) -> None:
+    """Display received decision."""
     status = "[green]APPROVED[/green]" if approved else "[red]REJECTED[/red]"
-    console.print(f"Decision sent: {status}")
+    console.print(f"Decision received: {status}")
 ```
 
 **File**: `rpc_stream_prototype/cli/ui/prompts.py`
@@ -1008,44 +1008,47 @@ def prompt_session_id() -> str:
     """Ask user for session ID to continue."""
     return Prompt.ask("Enter Session ID")
 
-def prompt_decision() -> bool:
-    """Ask for approval decision (y/n)."""
-    response = Prompt.ask("Approve?", choices=["y", "n"])
-    return response == "y"
+def prompt_proposal_text() -> str:
+    """Ask for proposal description."""
+    return Prompt.ask("Enter your proposal")
 ```
 
-#### 4.3 Implement Approval Loop
-**File**: `rpc_stream_prototype/cli/session/approval_loop.py`
+#### 4.3 Implement Proposal Loop
+**File**: `rpc_stream_prototype/cli/session/proposal_loop.py`
 
 ```python
 import asyncio
 from rpc_stream_prototype.cli.client.grpc_client import ProposalClient
-from rpc_stream_prototype.cli.ui.display import display_waiting_state, display_proposal, display_decision_sent
-from rpc_stream_prototype.cli.ui.prompts import prompt_decision
+from rpc_stream_prototype.cli.ui.display import display_waiting_state, display_proposal_sent, display_decision_received
+from rpc_stream_prototype.cli.ui.prompts import prompt_proposal_text
 
-async def run_approval_loop(client: ProposalClient, session_id: str) -> None:
+async def run_proposal_loop(client: ProposalClient, session_id: str) -> None:
     """
-    Main approval processing loop.
+    Main proposal submission loop.
     
-    - Subscribes to session events
-    - Displays incoming requests
-    - Prompts for y/n decision
-    - Sends decision back to server
+    - Prompts for proposal text
+    - Submits proposal to server
+    - Waits for decision via subscription
+    - Displays decision result
     - Loops until interrupted
     """
     client_id = str(uuid.uuid4())  # Unique identifier for this CLI instance
     
-    display_waiting_state()
-    
-    async for event in client.subscribe(session_id, client_id):
-        if event.request_created:
-            request = event.request_created
-            if request.status == ProposalStatus.PENDING:
-                display_proposal(request.proposal_id, request.text)
-                approved = prompt_decision()
-                await client.submit_decision(session_id, request.proposal_id, approved)
-                display_decision_sent(approved)
-                display_waiting_state()
+    while True:
+        text = prompt_proposal_text()
+        if not text.strip():
+            continue
+            
+        proposal = await client.submit_proposal(session_id, text)
+        display_proposal_sent(proposal.proposal_id, proposal.text)
+        display_waiting_state()
+        
+        # Wait for decision via subscription
+        async for event in client.subscribe(session_id, client_id):
+            if event.proposal_updated and event.proposal_updated.proposal_id == proposal.proposal_id:
+                approved = event.proposal_updated.status == ProposalStatus.APPROVED
+                display_decision_received(approved)
+                break
 ```
 
 #### 4.4 Implement CLI Commands
@@ -1058,9 +1061,9 @@ from rich.console import Console
 from rpc_stream_prototype.cli.client.grpc_client import ProposalClient
 from rpc_stream_prototype.cli.ui.display import display_session_id
 from rpc_stream_prototype.cli.ui.prompts import prompt_session_action, prompt_session_id
-from rpc_stream_prototype.cli.session.approval_loop import run_approval_loop
+from rpc_stream_prototype.cli.session.proposal_loop import run_proposal_loop
 
-app = typer.Typer(help="Approver CLI for real-time approval workflow")
+app = typer.Typer(help="Proposer CLI for real-time approval workflow")
 console = Console()
 
 @app.command()
@@ -1068,7 +1071,7 @@ def main(
     host: str = typer.Option("localhost", help="Backend server host"),
     port: int = typer.Option(50051, help="Backend server port")
 ):
-    """Start the Approver CLI."""
+    """Start the Proposer CLI."""
     asyncio.run(_main(host, port))
 
 async def _main(host: str, port: int) -> None:
@@ -1087,7 +1090,7 @@ async def _main(host: str, port: int) -> None:
                 return
             console.print(f"[green]Connected to session {session_id[:8]}...[/green]")
         
-        await run_approval_loop(client, session_id)
+        await run_proposal_loop(client, session_id)
     
     except KeyboardInterrupt:
         console.print("\n[dim]Exiting...[/dim]")
@@ -1105,7 +1108,7 @@ Per Constitution Principle IV, create high-fidelity fakes:
 
 | Fixture File | Purpose |
 |--------------|---------|
-| `fake_approval_client.py` | In-memory gRPC client that simulates server responses without network |
+| `fake_proposal_client.py` | In-memory gRPC client that simulates server responses without network |
 
 This fake MUST be reusable across CLI unit tests and avoid real network calls.
 
@@ -1116,7 +1119,7 @@ This fake MUST be reusable across CLI unit tests and avoid real network calls.
 |-----------|----------|
 | `test_grpc_client.py` | Client wrapper methods (uses `FakeProposalClient` from `tests/fixtures/`) |
 | `test_prompts.py` | Input validation, choice handling |
-| `test_approval_loop.py` | Event processing, decision flow (uses `FakeProposalClient`) |
+| `test_proposal_loop.py` | Proposal submission, decision flow (uses `FakeProposalClient`) |
 
 #### 4.7 Write Integration Tests
 **Directory**: `tests/integration/`
@@ -1129,27 +1132,27 @@ This fake MUST be reusable across CLI unit tests and avoid real network calls.
 1. Start new session → displays UUID (FR-007, FR-009)
 2. Continue existing session → connects successfully (FR-008)
 3. Continue invalid session → shows error
-4. Receive request → displays text (FR-010)
-5. Enter 'y' → sends Approved (FR-011)
-6. Enter 'n' → sends Rejected (FR-011)
-7. After decision → returns to waiting state (FR-012)
+4. Submit proposal → displays confirmation (FR-010)
+5. Receive approved decision → displays APPROVED (FR-011)
+6. Receive rejected decision → displays REJECTED (FR-011)
+7. While waiting for decision → blocks input (FR-012)
 
 ### Verification Checklist
 - [ ] `./scripts/check_quality.sh` passes
-- [ ] Shared fakes exist in `tests/fixtures/fake_approval_client.py`
+- [ ] Shared fakes exist in `tests/fixtures/fake_proposal_client.py`
 - [ ] All unit tests pass: `pytest tests/unit/cli/`
 - [ ] Integration tests pass: `pytest tests/integration/test_cli_e2e.py`
 - [ ] CLI starts: `rpc-cli` or `python -m rpc_stream_prototype.cli.main`
 - [ ] Can create session and see UUID
 - [ ] Can continue existing session
-- [ ] Requests are displayed when received
-- [ ] Decisions are sent successfully
+- [ ] Proposals are submitted and confirmations displayed
+- [ ] Decisions are received and displayed
 
 ---
 
-## PR #5: Angular App Implementation
+## PR #5: Approver Web App Implementation
 
-**Goal**: Complete web application for Requesters to join sessions, submit requests, and receive real-time decisions.
+**Goal**: Complete web application for Approvers to join sessions, view proposals, and make approve/reject decisions.
 
 ### Architecture
 
@@ -1172,7 +1175,7 @@ frontend/src/app/
 │       ├── session.component.html
 │       ├── components/
 │       │   ├── history-panel/
-│       │   ├── request-form/
+│       │   ├── decision-panel/
 │       │   └── connection-status/
 │       └── session.component.scss
 └── shared/
@@ -1248,8 +1251,8 @@ export class ProposalServiceClient {
     return subject.asObservable();
   }
   
-  async submitRequest(sessionId: string, text: string): Promise<Proposal> {
-    return await this.client.submitRequest({ sessionId, text });
+  async submitDecision(sessionId: string, proposalId: string, approved: boolean): Promise<Proposal> {
+    return await this.client.submitDecision({ sessionId, proposalId, approved });
   }
 }
 ```
@@ -1259,47 +1262,47 @@ export class ProposalServiceClient {
 
 ```typescript
 import { Injectable, signal, computed } from '@angular/core';
-import { Proposal, ProposalStatus } from '../../../generated/proposal_request_pb';
+import { Proposal, ProposalStatus } from '../../../generated/proposal_pb';
 
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
 
 @Injectable({ providedIn: 'root' })
 export class SessionStateService {
   private _sessionId = signal<string | null>(null);
-  private _requests = signal<Proposal[]>([]);
+  private _proposals = signal<Proposal[]>([]);
   private _connectionState = signal<ConnectionState>('disconnected');
   
   // Public readable signals
   sessionId = this._sessionId.asReadonly();
-  requests = this._requests.asReadonly();
+  proposals = this._proposals.asReadonly();
   connectionState = this._connectionState.asReadonly();
   
   // Computed signals
-  hasPendingRequest = computed(() => 
-    this._requests().some(r => r.status === ProposalStatus.PENDING)
+  pendingProposals = computed(() => 
+    this._proposals().filter(p => p.status === ProposalStatus.PENDING)
   );
   
-  canSubmit = computed(() => 
-    this._connectionState() === 'connected' && !this.hasPendingRequest()
+  hasNoPendingProposals = computed(() => 
+    this.pendingProposals().length === 0
   );
   
   // State mutations
   setSessionId(id: string) { this._sessionId.set(id); }
   setConnectionState(state: ConnectionState) { this._connectionState.set(state); }
   
-  addRequest(request: Proposal) {
-    this._requests.update(requests => [...requests, request]);
+  addProposal(proposal: Proposal) {
+    this._proposals.update(proposals => [...proposals, proposal]);
   }
   
-  updateRequest(request: Proposal) {
-    this._requests.update(requests => 
-      requests.map(r => r.requestId === request.requestId ? request : r)
+  updateProposal(proposal: Proposal) {
+    this._proposals.update(proposals => 
+      proposals.map(p => p.proposalId === proposal.proposalId ? proposal : p)
     );
   }
   
   reset() {
     this._sessionId.set(null);
-    this._requests.set([]);
+    this._proposals.set([]);
     this._connectionState.set('disconnected');
   }
 }
@@ -1345,8 +1348,8 @@ export class JoinSessionComponent {
 **File**: `frontend/src/app/features/session/session.component.ts`
 
 Main session view with:
-- History panel showing all requests/decisions
-- Request submission form
+- History panel showing all proposals/decisions
+- Decision panel for pending proposals (Approve/Reject buttons)
 - Connection status indicator
 - Auto-reconnect logic
 
@@ -1354,7 +1357,7 @@ Main session view with:
 @Component({
   selector: 'app-session',
   templateUrl: './session.component.html',
-  imports: [HistoryPanelComponent, RequestFormComponent, ConnectionStatusComponent]
+  imports: [HistoryPanelComponent, DecisionPanelComponent, ConnectionStatusComponent]
 })
 export class SessionComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -1383,10 +1386,10 @@ export class SessionComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (event) => {
           this.sessionState.setConnectionState('connected');
-          if (event.requestCreated) {
-            this.sessionState.addRequest(event.requestCreated);
-          } else if (event.requestUpdated) {
-            this.sessionState.updateRequest(event.requestUpdated);
+          if (event.proposalCreated) {
+            this.sessionState.addProposal(event.proposalCreated);
+          } else if (event.proposalUpdated) {
+            this.sessionState.updateProposal(event.proposalUpdated);
           }
         },
         error: () => this.sessionState.setConnectionState('disconnected')
@@ -1398,35 +1401,37 @@ export class SessionComponent implements OnInit, OnDestroy {
 #### 5.6 Create History Panel Component
 **File**: `frontend/src/app/features/session/components/history-panel/history-panel.component.ts`
 
-Display chronological list of requests with status badges (Pending/Approved/Rejected).
+Display chronological list of proposals with status badges (Pending/Approved/Rejected).
 
-#### 5.7 Create Request Form Component
-**File**: `frontend/src/app/features/session/components/request-form/request-form.component.ts`
+#### 5.7 Create Decision Panel Component
+**File**: `frontend/src/app/features/session/components/decision-panel/decision-panel.component.ts`
 
 ```typescript
 @Component({
-  selector: 'app-request-form',
-  templateUrl: './request-form.component.html',
-  imports: [MatFormField, MatInput, MatButton, ReactiveFormsModule]
+  selector: 'app-decision-panel',
+  templateUrl: './decision-panel.component.html',
+  imports: [MatButton, MatCard]
 })
-export class RequestFormComponent {
+export class DecisionPanelComponent {
   private approvalService = inject(ProposalServiceClient);
   private sessionState = inject(SessionStateService);
   
-  textControl = new FormControl('', Validators.required);
+  pendingProposals = this.sessionState.pendingProposals;
   
-  canSubmit = this.sessionState.canSubmit;
-  hasPending = this.sessionState.hasPendingRequest;
-  
-  async onSubmit() {
-    if (!this.textControl.valid || !this.canSubmit()) return;
-    
-    await this.approvalService.submitRequest(
+  async approve(proposalId: string) {
+    await this.approvalService.submitDecision(
       this.sessionState.sessionId()!,
-      this.textControl.value!
+      proposalId,
+      true
     );
-    
-    this.textControl.reset();
+  }
+  
+  async reject(proposalId: string) {
+    await this.approvalService.submitDecision(
+      this.sessionState.sessionId()!,
+      proposalId,
+      false
+    );
   }
 }
 ```
@@ -1474,7 +1479,7 @@ Using Playwright or Cypress:
 | Test File | Coverage |
 |-----------|----------|
 | `join-session.spec.ts` | Join flow, validation errors |
-| `session-workflow.spec.ts` | Full request/decision flow |
+| `session-workflow.spec.ts` | Full proposal/decision flow |
 | `reconnection.spec.ts` | Connection loss handling |
 
 **Test Scenarios** (FR Coverage):
@@ -1482,12 +1487,13 @@ Using Playwright or Cypress:
 2. Enter invalid ID → shows error (FR-013)
 3. Enter valid ID → navigates to session view (FR-014)
 4. Session view shows history (FR-014)
-5. Submit request → input disables (FR-015, FR-016)
-6. Pending state shows indicator (FR-017)
-7. Decision received → UI updates (FR-018)
-8. After decision → input re-enables (FR-019)
-9. Connection lost → shows indicator (FR-020)
-10. Auto-reconnect → shows reconnecting state (FR-021)
+5. Receive proposal → displays in decision panel (FR-015)
+6. Click Approve → sends approved decision (FR-016)
+7. Click Reject → sends rejected decision (FR-016)
+8. After decision → proposal moves to history with status badge (FR-017)
+9. No pending proposals → waiting state displayed (FR-018)
+10. Connection lost → shows indicator (FR-019)
+11. Auto-reconnect → shows reconnecting state (FR-020)
 
 ### Verification Checklist
 - [ ] `./scripts/check_quality.sh` passes (Python code)
@@ -1495,10 +1501,10 @@ Using Playwright or Cypress:
 - [ ] E2E tests pass: `cd frontend && ng e2e`
 - [ ] App builds: `cd frontend && ng build`
 - [ ] Can join session via UI
-- [ ] Can submit request
+- [ ] Can see incoming proposals
+- [ ] Can approve/reject proposals
 - [ ] Real-time updates work (< 5 seconds per SC-001)
 - [ ] History displays correctly (SC-002)
-- [ ] Input disables/enables appropriately
 - [ ] Connection status shows correctly
 - [ ] Auto-reconnect works
 
