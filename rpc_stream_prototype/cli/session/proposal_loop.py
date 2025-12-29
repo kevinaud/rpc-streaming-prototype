@@ -11,20 +11,24 @@ from rpc_stream_prototype.cli.ui.display import (
   display_waiting_state,
 )
 from rpc_stream_prototype.cli.ui.prompts import prompt_proposal_text
-from rpc_stream_prototype.generated.proposal.v1 import ProposalStatus
+from rpc_stream_prototype.generated.proposal.v1 import (
+  ProposalStatus,
+  SubmitProposalRequest,
+  SubscribeRequest,
+)
 
 if TYPE_CHECKING:
-  from rpc_stream_prototype.cli.client.grpc_client import ProposalClient
+  from rpc_stream_prototype.generated.proposal.v1 import ProposalServiceStub
 
 
-async def run_proposal_loop(client: ProposalClient, session_id: str) -> None:
+async def run_proposal_loop(stub: ProposalServiceStub, session_id: str) -> None:
   """Main proposal submission loop.
 
   Prompts for proposal text, submits to server, waits for decision via subscription,
   displays decision result, and loops until interrupted.
 
   Args:
-    client: Connected ProposalClient instance.
+    stub: Connected ProposalServiceStub instance.
     session_id: The session ID to submit proposals to.
   """
   client_id = str(uuid.uuid4())  # Unique identifier for this CLI instance
@@ -38,14 +42,20 @@ async def run_proposal_loop(client: ProposalClient, session_id: str) -> None:
       continue
 
     # Submit the proposal
-    proposal = await client.submit_proposal(session_id, text)
+    response = await stub.submit_proposal(
+      SubmitProposalRequest(session_id=session_id, text=text)
+    )
+    proposal = response.proposal
     display_proposal_sent(proposal.proposal_id, proposal.text)
     display_waiting_state()
 
     # Wait for decision via subscription
     try:
       decision_received = False
-      async for event in client.subscribe(session_id, client_id):
+      async for response in stub.subscribe(
+        SubscribeRequest(session_id=session_id, client_id=client_id)
+      ):
+        event = response.event
         # Check if this is a decision for our proposal
         if (
           event.proposal_updated

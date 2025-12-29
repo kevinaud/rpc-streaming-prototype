@@ -1,5 +1,7 @@
-"""gRPC client module for CLI."""
+"""gRPC client module for CLI.
 
-from rpc_stream_prototype.cli.client.grpc_client import ProposalClient
-
-__all__ = ["ProposalClient"]
+Note: This module is now a placeholder as the CLI uses
+ProposalServiceStub directly from the generated code.
+The client/ directory is retained for potential future
+utilities like connection helpers.
+"""

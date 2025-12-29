@@ -1,4 +1,4 @@
-"""Unit tests for proposal loop using FakeProposalClient."""
+"""Unit tests for proposal loop using FakeProposalServiceStub."""
 
 import sys
 from pathlib import Path
@@ -7,58 +7,77 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from rpc_stream_prototype.generated.proposal.v1 import (
+  CreateSessionRequest,
+  GetSessionRequest,
   ProposalStatus,
+  SubmitProposalRequest,
+  SubscribeRequest,
 )
-from tests.fixtures.fake_proposal_client import FakeProposalClient
+from tests.fixtures.fake_proposal_client import FakeProposalServiceStub
 
 
-class TestFakeProposalClient:
-  """Tests for the FakeProposalClient fixture."""
+class TestFakeProposalServiceStub:
+  """Tests for the FakeProposalServiceStub fixture."""
 
   async def test_create_session_returns_configured_id(self) -> None:
     """create_session should return the configured session ID."""
-    fake = FakeProposalClient()
+    fake = FakeProposalServiceStub()
     fake.session_id = "my-custom-session"
 
-    result = await fake.create_session()
+    response = await fake.create_session(CreateSessionRequest())
 
-    assert result == "my-custom-session"
+    assert response.session.session_id == "my-custom-session"
     assert fake.create_session_calls == 1
 
-  async def test_get_session_returns_configured_exists_state(self) -> None:
-    """get_session should return the configured exists state."""
-    fake = FakeProposalClient()
+  async def test_get_session_returns_session_when_exists(self) -> None:
+    """get_session should return session when exists."""
+    fake = FakeProposalServiceStub()
     fake.session_exists = True
 
-    assert await fake.get_session("any-id") is True
+    response = await fake.get_session(GetSessionRequest(session_id="any-id"))
+    assert response.session.session_id == "any-id"
+
+  async def test_get_session_raises_when_not_exists(self) -> None:
+    """get_session should raise when session doesn't exist."""
+    import pytest
+
+    fake = FakeProposalServiceStub()
     fake.session_exists = False
-    assert await fake.get_session("any-id") is False
+
+    with pytest.raises(Exception, match="not found"):
+      await fake.get_session(GetSessionRequest(session_id="any-id"))
 
   async def test_get_session_tracks_calls(self) -> None:
     """get_session should track session IDs checked."""
-    fake = FakeProposalClient()
+    fake = FakeProposalServiceStub()
 
-    await fake.get_session("session-1")
-    await fake.get_session("session-2")
+    await fake.get_session(GetSessionRequest(session_id="session-1"))
+    await fake.get_session(GetSessionRequest(session_id="session-2"))
 
     assert fake.get_session_calls == ["session-1", "session-2"]
 
   async def test_submit_proposal_returns_pending_proposal(self) -> None:
     """submit_proposal should return a PENDING proposal."""
-    fake = FakeProposalClient()
+    fake = FakeProposalServiceStub()
 
-    proposal = await fake.submit_proposal("session-1", "My proposal text")
+    response = await fake.submit_proposal(
+      SubmitProposalRequest(session_id="session-1", text="My proposal text")
+    )
 
-    assert proposal.text == "My proposal text"
-    assert proposal.status == ProposalStatus.PENDING
-    assert proposal.proposal_id == "proposal-1"
+    assert response.proposal.text == "My proposal text"
+    assert response.proposal.status == ProposalStatus.PENDING
+    assert response.proposal.proposal_id == "proposal-1"
 
   async def test_submit_proposal_tracks_calls(self) -> None:
     """submit_proposal should track submitted proposals."""
-    fake = FakeProposalClient()
+    fake = FakeProposalServiceStub()
 
-    await fake.submit_proposal("session-1", "First")
-    await fake.submit_proposal("session-2", "Second")
+    await fake.submit_proposal(
+      SubmitProposalRequest(session_id="session-1", text="First")
+    )
+    await fake.submit_proposal(
+      SubmitProposalRequest(session_id="session-2", text="Second")
+    )
 
     assert fake.submit_proposal_calls == [
       ("session-1", "First"),
@@ -67,46 +86,48 @@ class TestFakeProposalClient:
 
   async def test_subscribe_yields_configured_events(self) -> None:
     """subscribe should yield events configured via configure_decision."""
-    fake = FakeProposalClient()
+    fake = FakeProposalServiceStub()
     fake.configure_decision("proposal-1", approved=True)
     fake.configure_decision("proposal-2", approved=False)
 
-    events = [e async for e in fake.subscribe("session-1", "client-1")]
+    responses = [
+      r
+      async for r in fake.subscribe(
+        SubscribeRequest(session_id="session-1", client_id="client-1")
+      )
+    ]
 
-    assert len(events) == 2
-    assert events[0].proposal_updated.proposal_id == "proposal-1"
-    assert events[0].proposal_updated.status == ProposalStatus.APPROVED
-    assert events[1].proposal_updated.proposal_id == "proposal-2"
-    assert events[1].proposal_updated.status == ProposalStatus.REJECTED
+    assert len(responses) == 2
+    assert responses[0].event.proposal_updated.proposal_id == "proposal-1"
+    assert responses[0].event.proposal_updated.status == ProposalStatus.APPROVED
+    assert responses[1].event.proposal_updated.proposal_id == "proposal-2"
+    assert responses[1].event.proposal_updated.status == ProposalStatus.REJECTED
 
   async def test_subscribe_tracks_calls(self) -> None:
     """subscribe should track subscription requests."""
-    fake = FakeProposalClient()
+    fake = FakeProposalServiceStub()
 
-    _ = [e async for e in fake.subscribe("session-1", "client-a")]
-    _ = [e async for e in fake.subscribe("session-2", "client-b")]
+    _ = [
+      r
+      async for r in fake.subscribe(
+        SubscribeRequest(session_id="session-1", client_id="client-a")
+      )
+    ]
+    _ = [
+      r
+      async for r in fake.subscribe(
+        SubscribeRequest(session_id="session-2", client_id="client-b")
+      )
+    ]
 
     assert fake.subscribe_calls == [
       ("session-1", "client-a"),
       ("session-2", "client-b"),
     ]
 
-  async def test_session_context_manager(self) -> None:
-    """session() should provide async context manager."""
-    fake = FakeProposalClient()
-
-    assert not fake.connected
-
-    async for client in fake.session():
-      assert client.connected
-      assert client is fake
-
-    assert fake.closed
-    assert not fake.connected
-
 
 class TestProposalLoopWithFake:
-  """Tests for proposal loop behavior using FakeProposalClient.
+  """Tests for proposal loop behavior using FakeProposalServiceStub.
 
   These tests verify the logic flows correctly using the fake.
   Full integration testing requires a real server.
