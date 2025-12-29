@@ -16,11 +16,19 @@ build/
 node_modules/
 *.log
 npm-debug.log*
+yarn-error.log
 
 # IDE
 .idea/
 *.swp
 *.swo
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
 
 # Generated code (regenerated from protos)
 rpc_stream_prototype/generated/
@@ -28,6 +36,16 @@ rpc_stream_prototype/generated/
 # Logs (keep directory structure via logs/.gitkeep)
 logs/*.log
 
-# Angular build output
+# Angular / Frontend
+.angular/cache
+.sass-cache/
+connect.lock
+coverage/
+libpeerconnection.log
+testem.log
+typings/
+__screenshots__/
+out-tsc/
+bazel-out/
 frontend/dist/
 frontend/.angular/
