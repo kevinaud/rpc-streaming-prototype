@@ -12,12 +12,14 @@
 # This must run in postStartCommand (not postCreateCommand)
 # because the mount isn't available during image build/create.
 # ------------------------------------------------------------
-if [ -s /tmp/.gh_token_file ]; then
+TOKEN_FILE="/home/vscode/.gh_token_file"
+
+if [ -s "$TOKEN_FILE" ]; then
     echo "🔑 Auto-logging into GitHub CLI..."
-    gh auth login --with-token < /tmp/.gh_token_file
+    gh auth login --with-token < "$TOKEN_FILE"
     echo "✅ GitHub CLI authenticated"
 else
-    echo "⚠️  No GitHub token found at /tmp/.gh_token_file"
+    echo "⚠️  No GitHub token found at $TOKEN_FILE"
     echo "   To enable auto-login, create ~/.gh_token_file on your host"
     echo "   with a GitHub personal access token."
 fi

@@ -9,6 +9,7 @@
       "enableNonRootDocker": "true",
       "moby": false
     },
+    "ghcr.io/devcontainers/features/node:1": {},
     "ghcr.io/devcontainers-extra/features/uv:1": {},
     "ghcr.io/devcontainers-extra/features/prettier:1": {},
     "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {
@@ -23,8 +24,7 @@
         "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
         "python.testing.pytestEnabled": true,
         "editor.insertSpaces": true,
-        "editor.tabSize": 2,
-        "github.gitAuthentication": true
+        "editor.tabSize": 2
       },
       "extensions": [
         "ms-python.python",
@@ -33,29 +33,20 @@
         "ms-toolsai.jupyter",
         "tamasfe.even-better-toml",
         "angular.ng-template",
-        "zxh404.vscode-proto3",
-        "github.vscode-pull-request-github"
+        "zxh404.vscode-proto3"
       ]
     }
   },
 
-  // HOST SIDE: Ensure the file exists before Docker tries to mount it.
   "initializeCommand": "touch ${localEnv:HOME}/.gh_token_file",
 
-  // Mounts for persistent caching and GitHub token
   "mounts": [
-    "source=${localEnv:HOME}/.gh_token_file,target=/tmp/.gh_token_file,type=bind,readonly",
+    "source=${localEnv:HOME}/.gh_token_file,target=/home/vscode/.gh_token_file,type=bind,readonly",
     "source=uv-cache,target=/opt/uv-cache,type=volume"
   ],
 
-  // Forward common development ports
   "forwardPorts": [4200, 8080, 50051],
 
-  // postCreateCommand: Runs once after container is created
-  // - Restores dependencies from backup after workspace mount
   "postCreateCommand": "bash .devcontainer/init.sh",
-
-  // postStartCommand: Runs every time the container starts
-  // - GitHub CLI login (requires bind mount to be available)
   "postStartCommand": "bash .devcontainer/post-start.sh"
 }
