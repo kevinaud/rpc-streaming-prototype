@@ -2,12 +2,13 @@
  * Decision panel component.
  * Displays the current pending proposal and approve/reject buttons.
  */
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 import { ApprovalService } from '../../../../core/services/approval.service';
 import { SessionStateService } from '../../../../core/services/session-state.service';
 
@@ -17,6 +18,7 @@ import { SessionStateService } from '../../../../core/services/session-state.ser
   imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './decision-panel.component.html',
   styleUrl: './decision-panel.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DecisionPanelComponent {
   private readonly approvalService = inject(ApprovalService);

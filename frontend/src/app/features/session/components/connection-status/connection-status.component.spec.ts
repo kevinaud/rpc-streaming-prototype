@@ -2,9 +2,10 @@
  * Unit tests for ConnectionStatusComponent.
  * Tests connection status display.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ConnectionStatusComponent } from './connection-status.component';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
+
 import { SessionStateService } from '../../../../core/services/session-state.service';
+import { ConnectionStatusComponent } from './connection-status.component';
 
 describe('ConnectionStatusComponent', () => {
   let component: ConnectionStatusComponent;

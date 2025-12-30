@@ -2,10 +2,11 @@
  * Connection status indicator component.
  * Shows the current connection state with appropriate visual feedback.
  */
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 import { SessionStateService } from '../../../../core/services/session-state.service';
 
 @Component({
@@ -20,11 +21,11 @@ import { SessionStateService } from '../../../../core/services/session-state.ser
           <span>Connected</span>
         }
         @case ('connecting') {
-          <mat-spinner diameter="16"></mat-spinner>
+          <mat-spinner diameter="16" />
           <span>Connecting...</span>
         }
         @case ('reconnecting') {
-          <mat-spinner diameter="16"></mat-spinner>
+          <mat-spinner diameter="16" />
           <span>Reconnecting...</span>
         }
         @case ('error') {
@@ -69,6 +70,7 @@ import { SessionStateService } from '../../../../core/services/session-state.ser
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConnectionStatusComponent {
   readonly sessionState = inject(SessionStateService);

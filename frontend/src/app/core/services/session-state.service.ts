@@ -7,7 +7,8 @@
  * - Proposal list
  * - Pending proposal (awaiting decision)
  */
-import { Injectable, computed, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
+
 import type { Proposal } from '../../generated/proposal/v1/proposal_pb';
 import { ProposalStatus } from '../../generated/proposal/v1/proposal_pb';
 
@@ -62,8 +63,9 @@ export class SessionStateService {
     const proposals = this._proposals();
     // Find the most recent pending proposal
     for (let i = proposals.length - 1; i >= 0; i--) {
-      if (proposals[i].status === ProposalStatus.PENDING) {
-        return proposals[i];
+      const proposal = proposals[i];
+      if (proposal?.status === ProposalStatus.PENDING) {
+        return proposal;
       }
     }
     return null;

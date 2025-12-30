@@ -3,22 +3,23 @@
  *
  * Uses Connect-ES v2 with gRPC-Web transport through Envoy proxy.
  */
-import { Injectable, OnDestroy } from '@angular/core';
-import { createClient, type Client, type Transport } from '@connectrpc/connect';
-import { createGrpcWebTransport } from '@connectrpc/connect-web';
-import {
-  ProposalService,
-  type GetSessionResponse,
-  type SubscribeResponse,
-  type SubmitDecisionResponse,
-} from '../../generated/proposal/v1/proposal_service_pb';
+import { Injectable, type OnDestroy } from '@angular/core';
 import { create } from '@bufbuild/protobuf';
+import { type Client, createClient, type Transport } from '@connectrpc/connect';
+import { createGrpcWebTransport } from '@connectrpc/connect-web';
+
+import { ENVIRONMENT } from '../../../environments/environment';
+import {
+  type GetSessionResponse,
+  ProposalService,
+  type SubmitDecisionResponse,
+  type SubscribeResponse,
+} from '../../generated/proposal/v1/proposal_service_pb';
 import {
   GetSessionRequestSchema,
-  SubscribeRequestSchema,
   SubmitDecisionRequestSchema,
+  SubscribeRequestSchema,
 } from '../../generated/proposal/v1/proposal_service_pb';
-import { ENVIRONMENT } from '../../../environments/environment';
 
 type ProposalServiceClient = Client<typeof ProposalService>;
 

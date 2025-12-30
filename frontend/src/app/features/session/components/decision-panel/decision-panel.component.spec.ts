@@ -2,14 +2,15 @@
  * Unit tests for DecisionPanelComponent.
  * Tests decision submission and UI states.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { create } from '@bufbuild/protobuf';
 import { vi } from 'vitest';
-import { DecisionPanelComponent } from './decision-panel.component';
+
 import { ApprovalService } from '../../../../core/services/approval.service';
 import { SessionStateService } from '../../../../core/services/session-state.service';
-import { ProposalStatus, ProposalSchema } from '../../../../generated/proposal/v1/proposal_pb';
-import { create } from '@bufbuild/protobuf';
+import { ProposalSchema, ProposalStatus } from '../../../../generated/proposal/v1/proposal_pb';
+import { DecisionPanelComponent } from './decision-panel.component';
 
 describe('DecisionPanelComponent', () => {
   let component: DecisionPanelComponent;
@@ -102,7 +103,9 @@ describe('DecisionPanelComponent', () => {
     it('should set isSubmitting during submission', async () => {
       let resolvePromise: () => void;
       const controlledPromise = new Promise<unknown>((resolve) => {
-        resolvePromise = () => resolve({});
+        resolvePromise = () => {
+          resolve({});
+        };
       });
       submitDecision.mockReturnValue(controlledPromise);
 

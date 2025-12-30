@@ -2,19 +2,26 @@
  * Session component - main view for the Approver.
  * Displays connection status, proposal history, and decision panel.
  */
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  type OnDestroy,
+  type OnInit,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { ActivatedRoute, Router } from '@angular/router';
+import { v4 as uuidv4 } from 'uuid';
+
 import { ApprovalService } from '../../core/services/approval.service';
 import { SessionStateService } from '../../core/services/session-state.service';
-import { ConnectionStatusComponent } from './components/connection-status/connection-status.component';
-import { HistoryPanelComponent } from './components/history-panel/history-panel.component';
-import { DecisionPanelComponent } from './components/decision-panel/decision-panel.component';
-import { v4 as uuidv4 } from 'uuid';
 import type { SessionEvent } from '../../generated/proposal/v1/session_pb';
+import { ConnectionStatusComponent } from './components/connection-status/connection-status.component';
+import { DecisionPanelComponent } from './components/decision-panel/decision-panel.component';
+import { HistoryPanelComponent } from './components/history-panel/history-panel.component';
 
 @Component({
   selector: 'app-session',
@@ -30,6 +37,7 @@ import type { SessionEvent } from '../../generated/proposal/v1/session_pb';
   ],
   templateUrl: './session.component.html',
   styleUrl: './session.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
@@ -46,12 +54,12 @@ export class SessionComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const sessionId = this.route.snapshot.paramMap.get('id');
     if (!sessionId) {
-      this.router.navigate(['/']);
+      void this.router.navigate(['/']);
       return;
     }
 
     this.sessionState.setSessionId(sessionId);
-    this.startSubscription(sessionId);
+    void this.startSubscription(sessionId);
   }
 
   ngOnDestroy(): void {
@@ -95,12 +103,14 @@ export class SessionComponent implements OnInit, OnDestroy {
   private processSessionEvent(sessionEvent: SessionEvent): void {
     const event = sessionEvent.event;
     switch (event.case) {
-      case 'proposalCreated':
+      case 'proposalCreated': {
         this.sessionState.addProposal(event.value);
         break;
-      case 'proposalUpdated':
+      }
+      case 'proposalUpdated': {
         this.sessionState.upsertProposal(event.value);
         break;
+      }
     }
   }
 
@@ -110,7 +120,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       this.sessionState.setConnectionStatus('reconnecting');
       setTimeout(() => {
         if (!this.isDestroyed) {
-          this.startSubscription(sessionId);
+          void this.startSubscription(sessionId);
         }
       }, this.reconnectDelayMs);
     } else {
@@ -119,6 +129,6 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   leaveSession(): void {
-    this.router.navigate(['/']);
+    void this.router.navigate(['/']);
   }
 }

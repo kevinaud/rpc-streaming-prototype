@@ -78,10 +78,10 @@ echo "Running Angular build (AOT strict template verification)..."
 CI=true npm run ng -- build --configuration production --no-progress
 
 echo "Running ESLint..."
-CI=true npm run ng -- lint
+npm run lint
 
 echo "Running Prettier (format check)..."
-npx prettier --check "src/**/*.{ts,html,scss}"
+npm run format:check
 
 echo "✅ Angular checks passed!"
 

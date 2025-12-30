@@ -3,10 +3,11 @@
  * Tests Angular Signals-based state management.
  */
 import { TestBed } from '@angular/core/testing';
-import { SessionStateService } from './session-state.service';
-import { ProposalStatus, type Proposal } from '../../generated/proposal/v1/proposal_pb';
 import { create } from '@bufbuild/protobuf';
+
+import { type Proposal, ProposalStatus } from '../../generated/proposal/v1/proposal_pb';
 import { ProposalSchema } from '../../generated/proposal/v1/proposal_pb';
+import { SessionStateService } from './session-state.service';
 
 describe('SessionStateService', () => {
   let service: SessionStateService;

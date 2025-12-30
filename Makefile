@@ -155,5 +155,5 @@ format:
 	uv run ruff check --fix . || true
 	uv run ruff format .
 	@echo "--- TypeScript ---"
-	cd frontend && npx prettier --write "src/**/*.{ts,html,scss}"
+	cd frontend && npm run format
 	@echo "✅ Formatting complete!"

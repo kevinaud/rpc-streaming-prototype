@@ -2,13 +2,14 @@
  * Unit tests for JoinSessionComponent.
  * Tests form validation and navigation.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { vi } from 'vitest';
-import { JoinSessionComponent } from './join-session.component';
+
 import { ApprovalService } from '../../core/services/approval.service';
 import { SessionStateService } from '../../core/services/session-state.service';
+import { JoinSessionComponent } from './join-session.component';
 
 describe('JoinSessionComponent', () => {
   let component: JoinSessionComponent;

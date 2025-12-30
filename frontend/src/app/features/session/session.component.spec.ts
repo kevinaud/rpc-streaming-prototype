@@ -2,13 +2,14 @@
  * Unit tests for SessionComponent.
  * Tests subscription management and session lifecycle.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { vi } from 'vitest';
-import { SessionComponent } from './session.component';
+
 import { ApprovalService } from '../../core/services/approval.service';
 import { SessionStateService } from '../../core/services/session-state.service';
+import { SessionComponent } from './session.component';
 
 describe('SessionComponent', () => {
   let component: SessionComponent;

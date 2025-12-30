@@ -2,15 +2,16 @@
  * Join Session component.
  * Allows the Approver to join an existing session by entering a session ID.
  */
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Router } from '@angular/router';
+
 import { ApprovalService } from '../../core/services/approval.service';
 import { SessionStateService } from '../../core/services/session-state.service';
 
@@ -28,6 +29,7 @@ import { SessionStateService } from '../../core/services/session-state.service';
   ],
   templateUrl: './join-session.component.html',
   styleUrl: './join-session.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JoinSessionComponent {
   private readonly fb = inject(FormBuilder);

@@ -2,12 +2,13 @@
  * Unit tests for HistoryPanelComponent.
  * Tests proposal history display and formatting.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { HistoryPanelComponent } from './history-panel.component';
-import { SessionStateService } from '../../../../core/services/session-state.service';
-import { ProposalStatus, ProposalSchema } from '../../../../generated/proposal/v1/proposal_pb';
 import { create } from '@bufbuild/protobuf';
+
+import { SessionStateService } from '../../../../core/services/session-state.service';
+import { ProposalSchema, ProposalStatus } from '../../../../generated/proposal/v1/proposal_pb';
+import { HistoryPanelComponent } from './history-panel.component';
 
 describe('HistoryPanelComponent', () => {
   let component: HistoryPanelComponent;
