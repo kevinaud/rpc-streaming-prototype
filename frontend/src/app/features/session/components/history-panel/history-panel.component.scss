@@ -1,0 +1,90 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.history-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-card-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba(0, 0, 0, 0.54);
+  text-align: center;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .hint {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+}
+
+.proposal-item {
+  margin-bottom: 0.5rem;
+}
+
+.proposal-text {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.proposal-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+mat-icon {
+  &.approved {
+    color: #4caf50;
+  }
+
+  &.rejected {
+    color: #f44336;
+  }
+
+  &.pending {
+    color: #ff9800;
+  }
+}
+
+mat-chip {
+  &.approved {
+    --mat-chip-label-text-color: #4caf50;
+  }
+
+  &.rejected {
+    --mat-chip-label-text-color: #f44336;
+  }
+
+  &.pending {
+    --mat-chip-label-text-color: #ff9800;
+  }
+}

@@ -1,0 +1,56 @@
+<mat-card class="decision-card">
+  <mat-card-header>
+    <mat-card-title>Pending Decision</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (sessionState.pendingProposal(); as pending) {
+      <div class="proposal-content">
+        <div class="proposal-label">Proposal:</div>
+        <div class="proposal-text">{{ pending.text }}</div>
+      </div>
+
+      <div class="decision-actions">
+        <button
+          mat-raised-button
+          color="warn"
+          class="reject-button"
+          (click)="submitDecision(false)"
+          [disabled]="isSubmitting || !sessionState.isConnected()"
+        >
+          @if (isSubmitting) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <ng-container>
+              <mat-icon>close</mat-icon>
+              Reject
+            </ng-container>
+          }
+        </button>
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="approve-button"
+          (click)="submitDecision(true)"
+          [disabled]="isSubmitting || !sessionState.isConnected()"
+        >
+          @if (isSubmitting) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <ng-container>
+              <mat-icon>check</mat-icon>
+              Approve
+            </ng-container>
+          }
+        </button>
+      </div>
+    } @else {
+      <div class="empty-state">
+        <mat-icon>hourglass_empty</mat-icon>
+        <p>Waiting for proposal...</p>
+        <p class="hint">A proposal will appear here when the Proposer submits one</p>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

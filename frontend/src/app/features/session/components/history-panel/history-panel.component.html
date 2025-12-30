@@ -1,0 +1,37 @@
+<mat-card class="history-card">
+  <mat-card-header>
+    <mat-card-title>Proposal History</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (sessionState.proposalHistory().length === 0) {
+      <div class="empty-state">
+        <mat-icon>history</mat-icon>
+        <p>No proposals yet</p>
+        <p class="hint">Proposals will appear here as they are submitted</p>
+      </div>
+    } @else {
+      <mat-list>
+        @for (
+          proposal of sessionState.proposalHistory();
+          track trackByProposalId($index, proposal)
+        ) {
+          <mat-list-item class="proposal-item">
+            <mat-icon matListItemIcon [class]="getStatusClass(proposal.status)">
+              {{ getStatusIcon(proposal.status) }}
+            </mat-icon>
+            <div matListItemTitle class="proposal-text">{{ proposal.text }}</div>
+            <div matListItemLine class="proposal-meta">
+              <mat-chip [class]="getStatusClass(proposal.status)" size="small">
+                {{ getStatusLabel(proposal.status) }}
+              </mat-chip>
+              @if (toDate(proposal); as date) {
+                <span class="timestamp">{{ date | date: 'short' }}</span>
+              }
+            </div>
+          </mat-list-item>
+        }
+      </mat-list>
+    }
+  </mat-card-content>
+</mat-card>

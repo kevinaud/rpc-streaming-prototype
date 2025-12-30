@@ -1,0 +1,42 @@
+<mat-card class="join-session-card">
+  <mat-card-header>
+    <mat-card-title>Join Session</mat-card-title>
+    <mat-card-subtitle>Enter the Session ID shared by the Proposer</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Session ID</mat-label>
+        <input
+          matInput
+          formControlName="sessionId"
+          placeholder="e.g., abc123-def456"
+          [disabled]="isLoading"
+        />
+        @if (form.controls.sessionId.hasError('required') && form.controls.sessionId.touched) {
+          <mat-error>Session ID is required</mat-error>
+        }
+      </mat-form-field>
+
+      @if (errorMessage) {
+        <div class="error-message">{{ errorMessage }}</div>
+      }
+
+      <div class="actions">
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="form.invalid || isLoading"
+        >
+          @if (isLoading) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            Join Session
+          }
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

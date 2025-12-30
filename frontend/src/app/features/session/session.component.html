@@ -1,0 +1,23 @@
+<div class="session-container">
+  <mat-toolbar color="primary">
+    <span>Session: {{ sessionState.sessionId() }}</span>
+    <span class="spacer"></span>
+    <app-connection-status></app-connection-status>
+    <button mat-icon-button (click)="leaveSession()" matTooltip="Leave Session">
+      <mat-icon>exit_to_app</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <div class="session-content">
+    @if (sessionState.hasError()) {
+      <div class="error-banner">
+        {{ sessionState.error() }}
+      </div>
+    }
+
+    <div class="panels">
+      <app-history-panel class="history-panel"></app-history-panel>
+      <app-decision-panel class="decision-panel"></app-decision-panel>
+    </div>
+  </div>
+</div>
