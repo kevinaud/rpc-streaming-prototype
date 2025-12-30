@@ -3,9 +3,10 @@
 # Presubmit Checks
 # ============================================================
 # Runs the full suite of CI checks:
-# 1. Quality checks (linting, formatting, proto generation)
-# 2. Backend tests (unit and integration)
-# 3. Frontend tests
+# 1. Proto generation (Python + TypeScript)
+# 2. Quality checks (linting, formatting)
+# 3. Backend tests (unit and integration)
+# 4. Frontend tests
 # ============================================================
 
 set -e
@@ -16,6 +17,11 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
 echo "🚀 Starting Presubmit Checks..."
+
+# Generate protos first (required for type checking and tests)
+echo ""
+echo "🔧 Generating Proto Code..."
+make regenerate
 
 # Run Quality Checks
 echo ""
