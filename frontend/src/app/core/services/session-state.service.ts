@@ -59,7 +59,7 @@ export class SessionStateService {
   /**
    * Get the pending proposal (if any) - the most recent proposal awaiting a decision.
    */
-  readonly pendingProposal = computed(() => {
+  readonly pendingProposal = computed<Proposal | null>(() => {
     const proposals = this._proposals();
     // Find the most recent pending proposal
     for (let i = proposals.length - 1; i >= 0; i--) {

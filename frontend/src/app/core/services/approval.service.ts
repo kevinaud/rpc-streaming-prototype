@@ -3,7 +3,7 @@
  *
  * Uses Connect-ES v2 with gRPC-Web transport through Envoy proxy.
  */
-import { Injectable, type OnDestroy } from '@angular/core';
+import { DestroyRef, inject, Injectable } from '@angular/core';
 import { create } from '@bufbuild/protobuf';
 import { type Client, createClient, type Transport } from '@connectrpc/connect';
 import { createGrpcWebTransport } from '@connectrpc/connect-web';
@@ -26,7 +26,8 @@ type ProposalServiceClient = Client<typeof ProposalService>;
 @Injectable({
   providedIn: 'root',
 })
-export class ApprovalService implements OnDestroy {
+export class ApprovalService {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly transport: Transport;
   private readonly client: ProposalServiceClient;
   private abortController: AbortController | null = null;
@@ -39,10 +40,11 @@ export class ApprovalService implements OnDestroy {
 
     // Create typed client for ProposalService
     this.client = createClient(ProposalService, this.transport);
-  }
 
-  ngOnDestroy(): void {
-    this.cancelSubscription();
+    // Register cleanup on destroy
+    this.destroyRef.onDestroy(() => {
+      this.cancelSubscription();
+    });
   }
 
   /**

@@ -2,7 +2,6 @@
  * Connection status indicator component.
  * Shows the current connection state with appropriate visual feedback.
  */
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -12,7 +11,7 @@ import { SessionStateService } from '../../../../core/services/session-state.ser
 @Component({
   selector: 'app-connection-status',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [MatIconModule, MatProgressSpinnerModule],
   template: `
     <div class="connection-status" [class]="sessionState.connectionStatus()">
       @switch (sessionState.connectionStatus()) {

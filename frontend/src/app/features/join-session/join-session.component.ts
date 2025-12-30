@@ -2,7 +2,6 @@
  * Join Session component.
  * Allows the Approver to join an existing session by entering a session ID.
  */
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,7 +18,6 @@ import { SessionStateService } from '../../core/services/session-state.service';
   selector: 'app-join-session',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,

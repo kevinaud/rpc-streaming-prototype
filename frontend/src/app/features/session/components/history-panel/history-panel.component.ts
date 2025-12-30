@@ -2,7 +2,7 @@
  * History panel component.
  * Displays the list of past proposals and their outcomes.
  */
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -16,7 +16,7 @@ import { type Proposal, ProposalStatus } from '../../../../generated/proposal/v1
 @Component({
   selector: 'app-history-panel',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatListModule, MatIconModule, MatChipsModule, DatePipe],
+  imports: [MatCardModule, MatListModule, MatIconModule, MatChipsModule, DatePipe],
   templateUrl: './history-panel.component.html',
   styleUrl: './history-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -2,14 +2,7 @@
  * Session component - main view for the Approver.
  * Displays connection status, proposal history, and decision panel.
  */
-import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  type OnDestroy,
-  type OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, type OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -27,7 +20,6 @@ import { HistoryPanelComponent } from './components/history-panel/history-panel.
   selector: 'app-session',
   standalone: true,
   imports: [
-    CommonModule,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
@@ -39,7 +31,8 @@ import { HistoryPanelComponent } from './components/history-panel/history-panel.
   styleUrl: './session.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SessionComponent implements OnInit, OnDestroy {
+export class SessionComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly approvalService = inject(ApprovalService);
@@ -49,7 +42,16 @@ export class SessionComponent implements OnInit, OnDestroy {
   private reconnectAttempts = 0;
   private readonly maxReconnectAttempts = 5;
   private readonly reconnectDelayMs = 2000;
-  private isDestroyed = false;
+  private abortController: AbortController | null = null;
+
+  constructor() {
+    // Register cleanup on destroy
+    this.destroyRef.onDestroy(() => {
+      this.abortController?.abort();
+      this.approvalService.cancelSubscription();
+      this.sessionState.reset();
+    });
+  }
 
   ngOnInit(): void {
     const sessionId = this.route.snapshot.paramMap.get('id');
@@ -62,18 +64,16 @@ export class SessionComponent implements OnInit, OnDestroy {
     void this.startSubscription(sessionId);
   }
 
-  ngOnDestroy(): void {
-    this.isDestroyed = true;
-    this.approvalService.cancelSubscription();
-    this.sessionState.reset();
-  }
-
   private async startSubscription(sessionId: string): Promise<void> {
+    // Cancel any existing subscription
+    this.abortController?.abort();
+    this.abortController = new AbortController();
+
     this.sessionState.setConnectionStatus('connecting');
 
     try {
       for await (const response of this.approvalService.subscribe(sessionId, this.clientId)) {
-        if (this.isDestroyed) break;
+        if (this.abortController.signal.aborted) break;
 
         // Successfully connected
         if (this.sessionState.connectionStatus() !== 'connected') {
@@ -89,12 +89,12 @@ export class SessionComponent implements OnInit, OnDestroy {
       }
 
       // Stream ended normally
-      if (!this.isDestroyed) {
+      if (!this.abortController.signal.aborted) {
         this.handleDisconnect(sessionId);
       }
     } catch (error) {
       console.error('Subscription error:', error);
-      if (!this.isDestroyed) {
+      if (!this.abortController.signal.aborted) {
         this.handleDisconnect(sessionId);
       }
     }
@@ -115,11 +115,13 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   private handleDisconnect(sessionId: string): void {
+    if (this.abortController?.signal.aborted) return;
+
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       this.sessionState.setConnectionStatus('reconnecting');
       setTimeout(() => {
-        if (!this.isDestroyed) {
+        if (!this.abortController?.signal.aborted) {
           void this.startSubscription(sessionId);
         }
       }, this.reconnectDelayMs);
