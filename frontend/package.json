@@ -42,6 +42,7 @@
     "@angular/build": "^21.0.4",
     "@angular/cli": "^21.0.4",
     "@angular/compiler-cli": "^21.0.0",
+    "@bufbuild/protoc-gen-es": "^2.10.2",
     "angular-eslint": "21.1.0",
     "eslint": "^9.39.1",
     "jsdom": "^27.1.0",

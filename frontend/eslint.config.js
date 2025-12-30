@@ -6,6 +6,10 @@ const angular = require("angular-eslint");
 
 module.exports = defineConfig([
   {
+    // Ignore generated proto files
+    ignores: ["src/app/generated/**"],
+  },
+  {
     files: ["**/*.ts"],
     extends: [
       eslint.configs.recommended,

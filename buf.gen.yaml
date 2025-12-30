@@ -1,0 +1,20 @@
+# Code generation configuration for buf generate
+# Generates both Python (betterproto) and TypeScript (Connect-ES v2) code
+version: v2
+clean: true
+inputs:
+  - directory: protos
+
+plugins:
+  # --- Python (betterproto) ---
+  - local: ["uv", "run", "protoc-gen-python_betterproto"]
+    out: rpc_stream_prototype/generated
+    opt:
+      - include_google_protobuf_copy=true
+
+  # --- TypeScript (Connect-ES v2) ---
+  # Single plugin generates messages AND service descriptors
+  - local: ["./frontend/node_modules/.bin/protoc-gen-es"]
+    out: frontend/src/app/generated
+    opt:
+      - target=ts

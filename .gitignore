@@ -30,8 +30,10 @@ yarn-error.log
 *.sublime-workspace
 .history/
 
-# Generated code (regenerated from protos)
-# rpc_stream_prototype/generated/
+# Generated code (regenerated from protos via `make generate`)
+rpc_stream_prototype/generated/
+frontend/src/app/generated/
+.proto-generated
 
 # Logs (keep directory structure via logs/.gitkeep)
 logs/*.log
@@ -49,4 +51,3 @@ out-tsc/
 bazel-out/
 frontend/dist/
 frontend/.angular/
-rpc_stream_prototype/generated_check_tmp/
