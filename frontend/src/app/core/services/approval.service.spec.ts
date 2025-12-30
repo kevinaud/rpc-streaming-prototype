@@ -1,6 +1,13 @@
 /**
  * Unit tests for ApprovalService.
- * Tests gRPC client interactions without actual network calls.
+ *
+ * Note: ApprovalService is a thin wrapper around Connect-ES gRPC client.
+ * Testing the actual RPC behavior would require either:
+ * - A running backend (integration test)
+ * - A fake transport implementation
+ *
+ * For this learning prototype, we test only the service's own logic
+ * (subscription lifecycle management) rather than the underlying gRPC client.
  */
 import { TestBed } from '@angular/core/testing';
 
@@ -20,14 +27,6 @@ describe('ApprovalService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getSession', () => {
-    it('should throw when session not found', async () => {
-      // The actual test would require mocking the transport
-      // For now, we verify the service method exists and is callable
-      expect(service.getSession).toBeDefined();
-    });
-  });
-
   describe('subscribe', () => {
     it('should return an async iterable', () => {
       const subscription = service.subscribe('test-session', 'test-client');
@@ -35,17 +34,14 @@ describe('ApprovalService', () => {
     });
   });
 
-  describe('submitDecision', () => {
-    it('should accept session, proposal, and approved flag', () => {
-      expect(service.submitDecision).toBeDefined();
-    });
-  });
-
   describe('cancelSubscription', () => {
-    it('should be callable', () => {
-      expect(service.cancelSubscription).toBeDefined();
-      // Should not throw when called without active subscription
+    it('should not throw when called without active subscription', () => {
+      expect(() => service.cancelSubscription()).not.toThrow();
+    });
+
+    it('should be idempotent', () => {
       service.cancelSubscription();
+      expect(() => service.cancelSubscription()).not.toThrow();
     });
   });
 });

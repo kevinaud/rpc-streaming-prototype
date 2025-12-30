@@ -52,7 +52,7 @@ export class JoinSessionComponent {
       return;
     }
 
-    this.isLoading = true;
+    this.setLoading(true);
     this.errorMessage = null;
 
     try {
@@ -67,7 +67,20 @@ export class JoinSessionComponent {
       this.errorMessage = 'Session not found. Please check the ID and try again.';
       console.error('Failed to join session:', error);
     } finally {
-      this.isLoading = false;
+      this.setLoading(false);
+    }
+  }
+
+  /**
+   * Set loading state and update form control disabled state accordingly.
+   * Angular recommends controlling disabled state via the form control rather than template binding.
+   */
+  private setLoading(loading: boolean): void {
+    this.isLoading = loading;
+    if (loading) {
+      this.form.controls.sessionId.disable();
+    } else {
+      this.form.controls.sessionId.enable();
     }
   }
 }

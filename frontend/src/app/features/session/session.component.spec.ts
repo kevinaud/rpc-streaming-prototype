@@ -114,14 +114,14 @@ describe('SessionComponent', () => {
   describe('cleanup', () => {
     it('should cancel subscription on destroy', () => {
       fixture.detectChanges();
-      component.ngOnDestroy();
+      fixture.destroy();
       expect(cancelSubscription).toHaveBeenCalled();
     });
 
     it('should reset state on destroy', () => {
       fixture.detectChanges();
       sessionState.setConnectionStatus('connected');
-      component.ngOnDestroy();
+      fixture.destroy();
       expect(sessionState.connectionStatus()).toBe('disconnected');
     });
   });

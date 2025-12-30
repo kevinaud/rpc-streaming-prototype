@@ -38,7 +38,24 @@ uv run pytest tests/unit tests/integration -v
 echo ""
 echo "🧪 Running Frontend Tests..."
 cd frontend
-CI=true npm run ng -- test --watch=false
+
+# Capture stderr to detect warnings - Angular/Vitest warnings should fail presubmit
+TEST_STDERR_FILE=$(mktemp)
+if ! CI=true npm run ng -- test --watch=false 2> >(tee "$TEST_STDERR_FILE" >&2); then
+  echo "❌ Frontend tests failed!"
+  rm -f "$TEST_STDERR_FILE"
+  exit 1
+fi
+
+# Check for Angular warnings in stderr (excluding expected output)
+if grep -q "It looks like you're using" "$TEST_STDERR_FILE" 2>/dev/null; then
+  echo ""
+  echo "❌ Frontend tests produced Angular warnings - please fix them:"
+  grep -A 10 "It looks like you're using" "$TEST_STDERR_FILE"
+  rm -f "$TEST_STDERR_FILE"
+  exit 1
+fi
+rm -f "$TEST_STDERR_FILE"
 
 echo ""
 echo "✅ All presubmit checks passed!"

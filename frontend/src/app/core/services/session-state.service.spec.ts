@@ -87,7 +87,7 @@ describe('SessionStateService', () => {
       service.addProposal(proposal);
 
       expect(service.proposals().length).toBe(1);
-      expect(service.proposals()[0].proposalId).toBe('prop-1');
+      expect(service.proposals()[0]!.proposalId).toBe('prop-1');
     });
 
     it('should add multiple proposals', () => {
@@ -113,7 +113,7 @@ describe('SessionStateService', () => {
       service.upsertProposal(updated);
 
       expect(service.proposals().length).toBe(1);
-      expect(service.proposals()[0].status).toBe(ProposalStatus.APPROVED);
+      expect(service.proposals()[0]!.status).toBe(ProposalStatus.APPROVED);
     });
   });
 

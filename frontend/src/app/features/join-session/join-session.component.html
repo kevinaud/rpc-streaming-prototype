@@ -8,12 +8,7 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Session ID</mat-label>
-        <input
-          matInput
-          formControlName="sessionId"
-          placeholder="e.g., abc123-def456"
-          [disabled]="isLoading"
-        />
+        <input matInput formControlName="sessionId" placeholder="e.g., abc123-def456" />
         @if (form.controls.sessionId.hasError('required') && form.controls.sessionId.touched) {
           <mat-error>Session ID is required</mat-error>
         }
