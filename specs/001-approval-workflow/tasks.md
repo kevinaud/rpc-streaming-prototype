@@ -384,13 +384,13 @@
 
 ### Unit Tests [PR5]
 
-- [ ] T155 [P] [PR5] Create frontend/src/app/core/services/approval.service.spec.ts
-- [ ] T156 [P] [PR5] Create frontend/src/app/core/services/session-state.service.spec.ts
-- [ ] T157 [P] [PR5] Create frontend/src/app/features/join-session/join-session.component.spec.ts
-- [ ] T158 [P] [PR5] Create frontend/src/app/features/session/session.component.spec.ts
-- [ ] T159 [P] [PR5] Create frontend/src/app/features/session/components/history-panel/history-panel.component.spec.ts
-- [ ] T160 [P] [PR5] Create frontend/src/app/features/session/components/decision-panel/decision-panel.component.spec.ts
-- [ ] T161 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.spec.ts
+- [x] T155 [P] [PR5] Create frontend/src/app/core/services/approval.service.spec.ts
+- [x] T156 [P] [PR5] Create frontend/src/app/core/services/session-state.service.spec.ts
+- [x] T157 [P] [PR5] Create frontend/src/app/features/join-session/join-session.component.spec.ts
+- [x] T158 [P] [PR5] Create frontend/src/app/features/session/session.component.spec.ts
+- [x] T159 [P] [PR5] Create frontend/src/app/features/session/components/history-panel/history-panel.component.spec.ts
+- [x] T160 [P] [PR5] Create frontend/src/app/features/session/components/decision-panel/decision-panel.component.spec.ts
+- [x] T161 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.spec.ts
 
 ### E2E Tests [PR5]
 
@@ -400,7 +400,7 @@
 
 ### Verification for PR #5
 
-- [ ] T165 [PR5] Run `cd frontend && ng test` - all unit tests pass
+- [x] T165 [PR5] Run `cd frontend && ng test` - all unit tests pass
 - [ ] T166 [PR5] Run `cd frontend && ng e2e` - all E2E tests pass
 - [x] T167 [PR5] Run `cd frontend && ng build` - build succeeds
 - [ ] T168 [PR5] Verify can join session via UI
