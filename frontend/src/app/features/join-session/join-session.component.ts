@@ -1,0 +1,86 @@
+/**
+ * Join Session component.
+ * Allows the Approver to join an existing session by entering a session ID.
+ */
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Router } from '@angular/router';
+
+import { ApprovalService } from '../../core/services/approval.service';
+import { SessionStateService } from '../../core/services/session-state.service';
+
+@Component({
+  selector: 'app-join-session',
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+  ],
+  templateUrl: './join-session.component.html',
+  styleUrl: './join-session.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class JoinSessionComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly approvalService = inject(ApprovalService);
+  private readonly sessionState = inject(SessionStateService);
+
+  readonly form = this.fb.group({
+    sessionId: ['', [Validators.required, Validators.minLength(1)]],
+  });
+
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+
+  async onSubmit(): Promise<void> {
+    if (this.form.invalid || this.isLoading()) {
+      return;
+    }
+
+    const sessionId = this.form.value.sessionId?.trim();
+    if (!sessionId) {
+      return;
+    }
+
+    this.setLoading(true);
+    this.errorMessage.set(null);
+
+    try {
+      // Verify session exists
+      await this.approvalService.getSession(sessionId);
+
+      // Session found - navigate to session view
+      this.sessionState.setSessionId(sessionId);
+      await this.router.navigate(['/session', sessionId]);
+    } catch (error) {
+      // Session not found or network error
+      this.errorMessage.set('Session not found. Please check the ID and try again.');
+      console.error('Failed to join session:', error);
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
+  /**
+   * Set loading state and update form control disabled state accordingly.
+   * Angular recommends controlling disabled state via the form control rather than template binding.
+   */
+  private setLoading(loading: boolean): void {
+    this.isLoading.set(loading);
+    if (loading) {
+      this.form.controls.sessionId.disable();
+    } else {
+      this.form.controls.sessionId.enable();
+    }
+  }
+}

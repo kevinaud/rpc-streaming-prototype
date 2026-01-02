@@ -339,58 +339,58 @@
 
 ### Git Setup for PR #5
 
-- [ ] T134 Sync main branch: `git checkout main && git pull origin main`
-- [ ] T135 Create feature branch: `git checkout -b pr5-angular-app`
+- [x] T134 Sync main branch: `git checkout main && git pull origin main`
+- [x] T135 Create feature branch: `git checkout -b pr5-angular-app`
 
 ### TypeScript Proto Generation [PR5]
 
-- [ ] T136 [PR5] Create frontend/buf.gen.yaml with Connect-ES plugins
-- [ ] T137 [PR5] Add "generate" script to frontend/package.json
-- [ ] T138 [PR5] Run buf generate and verify frontend/src/generated/ is created
+- [x] T136 [PR5] Create frontend/buf.gen.yaml with Connect-ES plugins
+- [x] T137 [PR5] Add "generate" script to frontend/package.json
+- [x] T138 [PR5] Run buf generate and verify frontend/src/generated/ is created
 
 ### Core Services [PR5]
 
-- [ ] T139 [PR5] Create frontend/src/app/core/services/approval.service.ts with Connect-ES gRPC client
-- [ ] T140 [PR5] Create frontend/src/app/core/services/session-state.service.ts with Angular Signals state management
-- [ ] T141 [PR5] Create frontend/src/app/core/models/types.ts with TypeScript interfaces
+- [x] T139 [PR5] Create frontend/src/app/core/services/approval.service.ts with Connect-ES gRPC client
+- [x] T140 [PR5] Create frontend/src/app/core/services/session-state.service.ts with Angular Signals state management
+- [x] T141 [PR5] Create frontend/src/app/core/models/types.ts with TypeScript interfaces
 
 ### Join Session Feature [PR5]
 
-- [ ] T142 [PR5] Create frontend/src/app/features/join-session/join-session.component.ts (FR-013)
-- [ ] T143 [PR5] Create frontend/src/app/features/join-session/join-session.component.html with Material form
-- [ ] T144 [PR5] Create frontend/src/app/features/join-session/join-session.component.scss
+- [x] T142 [PR5] Create frontend/src/app/features/join-session/join-session.component.ts (FR-013)
+- [x] T143 [PR5] Create frontend/src/app/features/join-session/join-session.component.html with Material form
+- [x] T144 [PR5] Create frontend/src/app/features/join-session/join-session.component.scss
 
 ### Session Feature - Main Component [PR5]
 
-- [ ] T145 [PR5] Create frontend/src/app/features/session/session.component.ts with subscription and auto-reconnect
-- [ ] T146 [PR5] Create frontend/src/app/features/session/session.component.html
-- [ ] T147 [PR5] Create frontend/src/app/features/session/session.component.scss
+- [x] T145 [PR5] Create frontend/src/app/features/session/session.component.ts with subscription and auto-reconnect
+- [x] T146 [PR5] Create frontend/src/app/features/session/session.component.html
+- [x] T147 [PR5] Create frontend/src/app/features/session/session.component.scss
 
 ### Session Feature - Child Components [PR5]
 
-- [ ] T148 [P] [PR5] Create frontend/src/app/features/session/components/history-panel/history-panel.component.ts (FR-014)
-- [ ] T149 [P] [PR5] Create frontend/src/app/features/session/components/decision-panel/decision-panel.component.ts (FR-015, FR-016, FR-017)
-- [ ] T150 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.ts (FR-019, FR-020)
+- [x] T148 [P] [PR5] Create frontend/src/app/features/session/components/history-panel/history-panel.component.ts (FR-014)
+- [x] T149 [P] [PR5] Create frontend/src/app/features/session/components/decision-panel/decision-panel.component.ts (FR-015, FR-016, FR-017)
+- [x] T150 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.ts (FR-019, FR-020)
 
 ### Shared Components [PR5]
 
-- [ ] T151 [PR5] Create frontend/src/app/shared/components/loading-spinner/loading-spinner.component.ts
+- [x] T151 [PR5] Create frontend/src/app/shared/components/loading-spinner/loading-spinner.component.ts
 
 ### Routing & Configuration [PR5]
 
-- [ ] T152 [PR5] Update frontend/src/app/app.routes.ts with routes ('', 'session/:id')
-- [ ] T153 [PR5] Update frontend/src/app/app.component.ts with router-outlet
-- [ ] T154 [PR5] Configure Angular Material theme in frontend/src/styles.scss
+- [x] T152 [PR5] Update frontend/src/app/app.routes.ts with routes ('', 'session/:id')
+- [x] T153 [PR5] Update frontend/src/app/app.component.ts with router-outlet
+- [x] T154 [PR5] Configure Angular Material theme in frontend/src/styles.scss
 
 ### Unit Tests [PR5]
 
-- [ ] T155 [P] [PR5] Create frontend/src/app/core/services/approval.service.spec.ts
-- [ ] T156 [P] [PR5] Create frontend/src/app/core/services/session-state.service.spec.ts
-- [ ] T157 [P] [PR5] Create frontend/src/app/features/join-session/join-session.component.spec.ts
-- [ ] T158 [P] [PR5] Create frontend/src/app/features/session/session.component.spec.ts
-- [ ] T159 [P] [PR5] Create frontend/src/app/features/session/components/history-panel/history-panel.component.spec.ts
-- [ ] T160 [P] [PR5] Create frontend/src/app/features/session/components/decision-panel/decision-panel.component.spec.ts
-- [ ] T161 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.spec.ts
+- [x] T155 [P] [PR5] Create frontend/src/app/core/services/approval.service.spec.ts
+- [x] T156 [P] [PR5] Create frontend/src/app/core/services/session-state.service.spec.ts
+- [x] T157 [P] [PR5] Create frontend/src/app/features/join-session/join-session.component.spec.ts
+- [x] T158 [P] [PR5] Create frontend/src/app/features/session/session.component.spec.ts
+- [x] T159 [P] [PR5] Create frontend/src/app/features/session/components/history-panel/history-panel.component.spec.ts
+- [x] T160 [P] [PR5] Create frontend/src/app/features/session/components/decision-panel/decision-panel.component.spec.ts
+- [x] T161 [P] [PR5] Create frontend/src/app/features/session/components/connection-status/connection-status.component.spec.ts
 
 ### E2E Tests [PR5]
 
@@ -400,15 +400,15 @@
 
 ### Verification for PR #5
 
-- [ ] T165 [PR5] Run `cd frontend && ng test` - all unit tests pass
+- [x] T165 [PR5] Run `cd frontend && ng test` - all unit tests pass
 - [ ] T166 [PR5] Run `cd frontend && ng e2e` - all E2E tests pass
-- [ ] T167 [PR5] Run `cd frontend && ng build` - build succeeds
+- [x] T167 [PR5] Run `cd frontend && ng build` - build succeeds
 - [ ] T168 [PR5] Verify can join session via UI
 - [ ] T169 [PR5] Verify can see incoming proposals and approve/reject them
 - [ ] T170 [PR5] Verify real-time updates work (< 5 seconds latency per SC-001)
 - [ ] T171 [PR5] Verify history displays correctly (SC-002)
 - [ ] T172 [PR5] Verify connection status shows correctly and auto-reconnect works
-- [ ] T173 [PR5] Verify `./scripts/check_quality.sh` passes
+- [x] T173 [PR5] Verify `./scripts/check_quality.sh` passes
 
 ### Git Workflow for PR #5
 

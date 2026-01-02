@@ -2,13 +2,16 @@
 ================================================================================
 SYNC IMPACT REPORT
 ================================================================================
-Version change: N/A → 1.0.0 (initial ratification)
+Version change: 1.0.0 → 1.1.0 (new section added)
+
+Modified sections:
+- (none)
 
 Added sections:
-- Core Principles (4 principles)
-- Development Tooling
-- Quality Gates
-- Governance
+- Frontend Architecture & Standards (6 rules for Angular development)
+
+Removed sections:
+- (none)
 
 Templates validation:
 - ✅ plan-template.md: Compatible (Constitution Check section present)
@@ -85,6 +88,123 @@ Unit tests MUST follow the "Classicist" (Detroit School) approach with the follo
 - **Type Checking**: Pyright in strict mode
 - **Testing**: pytest with `tests/` directory structure
 
+## Frontend Architecture & Standards
+
+This section defines mandatory constraints for all Angular code in `frontend/`.
+
+### I. Modern Lifecycle Management
+
+Components and services MUST use `DestroyRef` and `takeUntilDestroyed` for cleanup logic.
+
+- Implementing the `OnDestroy` interface is PROHIBITED unless required for external library interoperability
+- Manual boolean flags (e.g., `isDestroyed`, `isAlive`) to track component lifecycle are PROHIBITED
+- Cleanup callbacks MUST be registered via `this.destroyRef.onDestroy(() => ...)`
+
+```typescript
+// ❌ PROHIBITED
+class MyComp implements OnDestroy {
+  isAlive = true;
+  ngOnDestroy() { this.isAlive = false; }
+}
+
+// ✅ REQUIRED
+class MyComp {
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      // cleanup logic here
+    });
+  }
+}
+```
+
+**Rationale**: DestroyRef provides a declarative, injection-based lifecycle that eliminates boilerplate and prevents missed cleanup.
+
+### II. Dependency Injection Strategy
+
+All dependencies MUST be obtained using the `inject()` function.
+
+- Constructor-based dependency injection is PROHIBITED
+- Dependencies SHOULD be declared as `private readonly` class fields
+
+```typescript
+// ❌ PROHIBITED
+constructor(private service: UserService) {}
+
+// ✅ REQUIRED
+private readonly userService = inject(UserService);
+```
+
+**Rationale**: `inject()` enables safer field initialization, clearer type inference, and avoids constructor parameter ordering issues.
+
+### III. Signal State Encapsulation
+
+State services MUST follow the "Private Writable / Public Readonly" pattern.
+
+- `WritableSignal` instances MUST be private
+- Public state MUST be exposed as `Signal<T>` (readonly) using `.asReadonly()`
+- Direct mutation of state from outside the owning service is PROHIBITED
+
+```typescript
+// ✅ REQUIRED PATTERN
+private readonly _currentUser = signal<User | null>(null);
+readonly currentUser = this._currentUser.asReadonly();
+```
+
+**Rationale**: Enforces unidirectional data flow and prevents accidental state corruption from consumer components.
+
+### IV. Computed Signal Type Safety
+
+Computed signals that may return `null` or `undefined` MUST have explicit generic type annotations.
+
+- Relying on type inference for nullable return values is PROHIBITED
+- The generic type MUST document the nullability intent
+
+```typescript
+// ❌ PROHIBITED (relies on inference for nullable)
+readonly activeItem = computed(() => findItem() || null);
+
+// ✅ REQUIRED
+readonly activeItem = computed<Item | undefined>(() => this.items().find(i => i.active));
+```
+
+**Rationale**: Explicit types prevent "Type 'null' is not assignable to 'undefined'" errors and document API contracts.
+
+### V. Template Control Flow
+
+Components MUST use Angular's built-in control flow syntax (`@if`, `@for`, `@switch`).
+
+- Structural directives (`*ngIf`, `*ngFor`, `*ngSwitch`) are PROHIBITED
+- Importing `CommonModule` solely for structural directives is PROHIBITED
+
+**Rationale**: Built-in control flow is more performant, requires no imports, and is the forward-looking Angular standard.
+
+### VI. Streaming Data Handling
+
+When consuming `AsyncIterable` (gRPC streams) or Observables in components:
+
+- Cancellation MUST be handled via `DestroyRef` or an `AbortController` tied to `DestroyRef`
+- Manual boolean flags to break async loops are PROHIBITED
+- For `AsyncIterable`, pass an `AbortSignal` or check `destroyRef` to exit iteration
+
+```typescript
+// ✅ REQUIRED PATTERN for AsyncIterable
+private readonly destroyRef = inject(DestroyRef);
+
+async consumeStream(stream: AsyncIterable<Event>) {
+  const abortController = new AbortController();
+  this.destroyRef.onDestroy(() => abortController.abort());
+
+  for await (const event of stream) {
+    if (abortController.signal.aborted) break;
+    // process event
+  }
+}
+```
+
+**Rationale**: Ties stream lifecycle to component lifecycle automatically, preventing memory leaks and orphaned subscriptions.
+
 ## Quality Gates
 
 Before any code is considered complete:
@@ -102,4 +222,4 @@ This constitution supersedes all other development practices for this repository
 - Amendments require updating this document with version increment
 - Version follows semantic versioning: MAJOR (principle changes), MINOR (new sections), PATCH (clarifications)
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-28 | **Last Amended**: 2025-12-28
+**Version**: 1.1.0 | **Ratified**: 2025-12-28 | **Last Amended**: 2025-12-30

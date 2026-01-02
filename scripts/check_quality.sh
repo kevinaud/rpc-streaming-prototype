@@ -4,6 +4,9 @@
 # ============================================================
 # Runs code quality checks for both Python backend and Angular frontend.
 # Exits immediately if any check fails.
+#
+# NOTE: This script assumes protos have already been generated.
+#       Use `make quality` to ensure generation runs first.
 # ============================================================
 
 set -e
@@ -43,41 +46,6 @@ else
 fi
 
 # ============================================================
-# Proto Generation Check
-# ============================================================
-echo ""
-echo "----------------------------------------"
-echo "  Proto Generation Check"
-echo "----------------------------------------"
-
-echo "Checking if generated protos are up to date..."
-
-# Create a temporary directory for generation verification
-# We create it inside the project root so that ruff can find pyproject.toml
-TEMP_GEN_DIR="rpc_stream_prototype/generated_check_tmp"
-mkdir -p "$TEMP_GEN_DIR"
-
-# Ensure cleanup on exit
-cleanup() {
-  rm -rf "$TEMP_GEN_DIR"
-}
-trap cleanup EXIT
-
-# Generate protos to the temp directory
-./scripts/gen_protos.sh "$TEMP_GEN_DIR" > /dev/null
-
-# Compare the current generated directory with the fresh generation
-# We use diff -r to compare directories recursively, excluding __pycache__
-if ! diff -r --exclude=__pycache__ "rpc_stream_prototype/generated" "$TEMP_GEN_DIR"; then
-  echo "❌ Generated protos are not up to date!"
-  echo "   The generated code in 'rpc_stream_prototype/generated' does not match what is produced by the current protos."
-  echo "   Please run './scripts/gen_protos.sh' to update them."
-  exit 1
-fi
-
-echo "✅ Protos are up to date!"
-
-# ============================================================
 # Python Backend Checks
 # ============================================================
 echo ""
@@ -110,10 +78,10 @@ echo "Running Angular build (AOT strict template verification)..."
 CI=true npm run ng -- build --configuration production --no-progress
 
 echo "Running ESLint..."
-CI=true npm run ng -- lint
+npm run lint
 
 echo "Running Prettier (format check)..."
-npx prettier --check "src/**/*.{ts,html,scss}"
+npm run format:check
 
 echo "✅ Angular checks passed!"
 
