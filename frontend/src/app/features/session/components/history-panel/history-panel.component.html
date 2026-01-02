@@ -11,27 +11,29 @@
         <p class="hint">Proposals will appear here as they are submitted</p>
       </div>
     } @else {
-      <mat-list>
+      <div class="proposal-list">
         @for (
           proposal of sessionState.proposalHistory();
           track trackByProposalId($index, proposal)
         ) {
-          <mat-list-item class="proposal-item">
-            <mat-icon matListItemIcon [class]="getStatusClass(proposal.status)">
+          <div class="proposal-item">
+            <mat-icon [class]="getStatusClass(proposal.status)">
               {{ getStatusIcon(proposal.status) }}
             </mat-icon>
-            <div matListItemTitle class="proposal-text">{{ proposal.text }}</div>
-            <div matListItemLine class="proposal-meta">
-              <mat-chip [class]="getStatusClass(proposal.status)" size="small">
-                {{ getStatusLabel(proposal.status) }}
-              </mat-chip>
-              @if (toDate(proposal); as date) {
-                <span class="timestamp">{{ date | date: 'short' }}</span>
-              }
+            <div class="proposal-content">
+              <div class="proposal-text">{{ proposal.text }}</div>
+              <div class="proposal-meta">
+                <mat-chip [class]="getStatusClass(proposal.status)">
+                  {{ getStatusLabel(proposal.status) }}
+                </mat-chip>
+                @if (toDate(proposal); as date) {
+                  <span class="timestamp">{{ date | date: 'short' }}</span>
+                }
+              </div>
             </div>
-          </mat-list-item>
+          </div>
         }
-      </mat-list>
+      </div>
     }
   </mat-card-content>
 </mat-card>

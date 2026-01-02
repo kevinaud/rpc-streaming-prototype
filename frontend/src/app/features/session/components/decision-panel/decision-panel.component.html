@@ -21,10 +21,10 @@
           @if (isSubmitting) {
             <mat-spinner diameter="20" />
           } @else {
-            <ng-container>
+            <span class="button-content">
               <mat-icon>close</mat-icon>
-              Reject
-            </ng-container>
+              <span class="button-label">Reject</span>
+            </span>
           }
         </button>
 
@@ -38,10 +38,10 @@
           @if (isSubmitting) {
             <mat-spinner diameter="20" />
           } @else {
-            <ng-container>
+            <span class="button-content">
               <mat-icon>check</mat-icon>
-              Approve
-            </ng-container>
+              <span class="button-label">Approve</span>
+            </span>
           }
         </button>
       </div>

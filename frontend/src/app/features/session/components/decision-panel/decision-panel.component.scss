@@ -46,8 +46,11 @@ mat-card-content {
     flex: 1;
     min-height: 48px;
 
-    mat-icon {
-      margin-right: 0.5rem;
+    .button-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
 
     mat-spinner {

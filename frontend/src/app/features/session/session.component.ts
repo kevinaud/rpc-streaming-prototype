@@ -104,7 +104,8 @@ export class SessionComponent implements OnInit {
     const event = sessionEvent.event;
     switch (event.case) {
       case 'proposalCreated': {
-        this.sessionState.addProposal(event.value);
+        // Use upsert to handle reconnection scenarios where history is replayed
+        this.sessionState.upsertProposal(event.value);
         break;
       }
       case 'proposalUpdated': {

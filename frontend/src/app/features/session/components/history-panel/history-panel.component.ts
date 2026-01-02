@@ -7,7 +7,6 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
 import { timestampDate } from '@bufbuild/protobuf/wkt';
 
 import { SessionStateService } from '../../../../core/services/session-state.service';
@@ -16,7 +15,7 @@ import { type Proposal, ProposalStatus } from '../../../../generated/proposal/v1
 @Component({
   selector: 'app-history-panel',
   standalone: true,
-  imports: [MatCardModule, MatListModule, MatIconModule, MatChipsModule, DatePipe],
+  imports: [MatCardModule, MatIconModule, MatChipsModule, DatePipe],
   templateUrl: './history-panel.component.html',
   styleUrl: './history-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

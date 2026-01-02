@@ -13,7 +13,7 @@
 #   make quality     - Run all quality checks
 # ============================================================
 
-.PHONY: help generate clean server frontend test test-unit test-integration quality lint format all dev
+.PHONY: help generate clean server frontend test test-unit test-integration quality lint format all dev cli docker-up docker-up-d docker-down docker-rebuild
 
 # Default target
 .DEFAULT_GOAL := help
@@ -43,6 +43,12 @@ help:
 	@echo "  make server       - Start backend gRPC server"
 	@echo "  make frontend     - Start frontend Angular dev server"
 	@echo "  make dev          - Start both backend and frontend (requires tmux)"
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-up    - Start all services via Docker Compose"
+	@echo "  make docker-up-d  - Start all services (detached)"
+	@echo "  make docker-down  - Stop all Docker Compose services"
+	@echo "  make docker-rebuild - Full rebuild (use after adding dependencies)"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test         - Run all tests"
@@ -104,6 +110,32 @@ dev:
 	@echo "Starting development environment..."
 	@echo "Run 'make server' and 'make frontend' in separate terminals"
 	@echo "Or use: tmux new-session 'make server' \\; split-window 'make frontend'"
+
+# ============================================================
+# Docker
+# ============================================================
+
+# Start Docker Compose services
+docker-up:
+	@echo "🐳 Starting Docker Compose services..."
+	docker compose up
+
+# Start Docker Compose services (detached)
+docker-up-d:
+	@echo "🐳 Starting Docker Compose services (detached)..."
+	docker compose up -d
+
+# Stop Docker Compose services
+docker-down:
+	@echo "🐳 Stopping Docker Compose services..."
+	docker compose down
+
+# Full rebuild of Docker images (use after adding new dependencies)
+docker-rebuild:
+	@echo "🐳 Rebuilding Docker images from scratch..."
+	docker compose down -v
+	docker compose build --no-cache
+	@echo "✅ Docker rebuild complete! Run 'make docker-up' to start."
 
 # ============================================================
 # CLI
