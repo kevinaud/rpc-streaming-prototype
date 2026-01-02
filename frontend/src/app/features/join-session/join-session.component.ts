@@ -2,7 +2,7 @@
  * Join Session component.
  * Allows the Approver to join an existing session by entering a session ID.
  */
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -39,11 +39,11 @@ export class JoinSessionComponent {
     sessionId: ['', [Validators.required, Validators.minLength(1)]],
   });
 
-  isLoading = false;
-  errorMessage: string | null = null;
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
 
   async onSubmit(): Promise<void> {
-    if (this.form.invalid || this.isLoading) {
+    if (this.form.invalid || this.isLoading()) {
       return;
     }
 
@@ -53,7 +53,7 @@ export class JoinSessionComponent {
     }
 
     this.setLoading(true);
-    this.errorMessage = null;
+    this.errorMessage.set(null);
 
     try {
       // Verify session exists
@@ -64,7 +64,7 @@ export class JoinSessionComponent {
       await this.router.navigate(['/session', sessionId]);
     } catch (error) {
       // Session not found or network error
-      this.errorMessage = 'Session not found. Please check the ID and try again.';
+      this.errorMessage.set('Session not found. Please check the ID and try again.');
       console.error('Failed to join session:', error);
     } finally {
       this.setLoading(false);
@@ -76,7 +76,7 @@ export class JoinSessionComponent {
    * Angular recommends controlling disabled state via the form control rather than template binding.
    */
   private setLoading(loading: boolean): void {
-    this.isLoading = loading;
+    this.isLoading.set(loading);
     if (loading) {
       this.form.controls.sessionId.disable();
     } else {

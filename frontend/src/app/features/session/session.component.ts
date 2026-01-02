@@ -43,10 +43,15 @@ export class SessionComponent implements OnInit {
   private readonly maxReconnectAttempts = 5;
   private readonly reconnectDelayMs = 2000;
   private abortController: AbortController | null = null;
+  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     // Register cleanup on destroy
     this.destroyRef.onDestroy(() => {
+      if (this.reconnectTimeoutId !== null) {
+        clearTimeout(this.reconnectTimeoutId);
+        this.reconnectTimeoutId = null;
+      }
       this.abortController?.abort();
       this.approvalService.cancelSubscription();
       this.sessionState.reset();
@@ -65,6 +70,12 @@ export class SessionComponent implements OnInit {
   }
 
   private async startSubscription(sessionId: string): Promise<void> {
+    // Cancel any pending reconnect timeout
+    if (this.reconnectTimeoutId !== null) {
+      clearTimeout(this.reconnectTimeoutId);
+      this.reconnectTimeoutId = null;
+    }
+
     // Cancel any existing subscription
     this.abortController?.abort();
     this.abortController = new AbortController();
@@ -121,7 +132,8 @@ export class SessionComponent implements OnInit {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       this.sessionState.setConnectionStatus('reconnecting');
-      setTimeout(() => {
+      this.reconnectTimeoutId = setTimeout(() => {
+        this.reconnectTimeoutId = null;
         if (!this.abortController?.signal.aborted) {
           void this.startSubscription(sessionId);
         }

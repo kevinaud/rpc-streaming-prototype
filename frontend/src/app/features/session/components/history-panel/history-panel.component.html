@@ -16,15 +16,16 @@
           proposal of sessionState.proposalHistory();
           track trackByProposalId($index, proposal)
         ) {
+          @let config = getStatusConfig(proposal.status);
           <div class="proposal-item">
-            <mat-icon [class]="getStatusClass(proposal.status)">
-              {{ getStatusIcon(proposal.status) }}
+            <mat-icon [class]="config.cssClass">
+              {{ config.icon }}
             </mat-icon>
             <div class="proposal-content">
               <div class="proposal-text">{{ proposal.text }}</div>
               <div class="proposal-meta">
-                <mat-chip [class]="getStatusClass(proposal.status)">
-                  {{ getStatusLabel(proposal.status) }}
+                <mat-chip [class]="config.cssClass">
+                  {{ config.label }}
                 </mat-chip>
                 @if (toDate(proposal); as date) {
                   <span class="timestamp">{{ date | date: 'short' }}</span>

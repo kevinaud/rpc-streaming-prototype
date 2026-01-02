@@ -110,11 +110,11 @@ describe('DecisionPanelComponent', () => {
       submitDecision.mockReturnValue(controlledPromise);
 
       const submissionPromise = component.submitDecision(true);
-      expect(component.isSubmitting).toBeTruthy();
+      expect(component.isSubmitting()).toBeTruthy();
 
       resolvePromise!();
       await submissionPromise;
-      expect(component.isSubmitting).toBeFalsy();
+      expect(component.isSubmitting()).toBeFalsy();
     });
 
     it('should not submit when no pending proposal', async () => {

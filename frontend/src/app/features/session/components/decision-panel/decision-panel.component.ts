@@ -2,7 +2,7 @@
  * Decision panel component.
  * Displays the current pending proposal and approve/reject buttons.
  */
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,17 +23,22 @@ export class DecisionPanelComponent {
   private readonly approvalService = inject(ApprovalService);
   readonly sessionState = inject(SessionStateService);
 
-  isSubmitting = false;
+  /** Whether a decision is currently being submitted. */
+  readonly isSubmitting = signal(false);
+
+  /** Local error message for submission failures (with retry option). */
+  readonly submissionError = signal<string | null>(null);
 
   async submitDecision(approved: boolean): Promise<void> {
     const pending = this.sessionState.pendingProposal();
     const sessionId = this.sessionState.sessionId();
 
-    if (!pending || !sessionId || this.isSubmitting) {
+    if (!pending || !sessionId || this.isSubmitting()) {
       return;
     }
 
-    this.isSubmitting = true;
+    this.isSubmitting.set(true);
+    this.submissionError.set(null);
 
     try {
       const response = await this.approvalService.submitDecision(
@@ -49,9 +54,14 @@ export class DecisionPanelComponent {
       }
     } catch (error) {
       console.error('Failed to submit decision:', error);
-      this.sessionState.setError('Failed to submit decision. Please try again.');
+      this.submissionError.set('Failed to submit decision. Please try again.');
     } finally {
-      this.isSubmitting = false;
+      this.isSubmitting.set(false);
     }
+  }
+
+  /** Dismiss the submission error. */
+  dismissError(): void {
+    this.submissionError.set(null);
   }
 }

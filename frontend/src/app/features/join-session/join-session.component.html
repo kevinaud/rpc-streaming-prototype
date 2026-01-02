@@ -14,8 +14,8 @@
         }
       </mat-form-field>
 
-      @if (errorMessage) {
-        <div class="error-message">{{ errorMessage }}</div>
+      @if (errorMessage(); as error) {
+        <div class="error-message">{{ error }}</div>
       }
 
       <div class="actions">
@@ -23,9 +23,9 @@
           mat-raised-button
           color="primary"
           type="submit"
-          [disabled]="form.invalid || isLoading"
+          [disabled]="form.invalid || isLoading()"
         >
-          @if (isLoading) {
+          @if (isLoading()) {
             <mat-spinner diameter="20" />
           } @else {
             Join Session

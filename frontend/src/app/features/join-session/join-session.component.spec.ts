@@ -91,7 +91,7 @@ describe('JoinSessionComponent', () => {
       getSession.mockRejectedValue(new Error('Session not found'));
       component.form.get('sessionId')?.setValue('invalid-session');
       await component.onSubmit();
-      expect(component.errorMessage).toBeTruthy();
+      expect(component.errorMessage()).toBeTruthy();
       expect(routerNavigate).not.toHaveBeenCalled();
     });
 
@@ -105,12 +105,12 @@ describe('JoinSessionComponent', () => {
       component.form.get('sessionId')?.setValue('test-session-123');
       const submitPromise = component.onSubmit();
 
-      expect(component.isLoading).toBeTruthy();
+      expect(component.isLoading()).toBeTruthy();
 
       resolvePromise!();
       await submitPromise;
 
-      expect(component.isLoading).toBeFalsy();
+      expect(component.isLoading()).toBeFalsy();
     });
   });
 

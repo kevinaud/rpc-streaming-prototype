@@ -12,6 +12,21 @@ import { timestampDate } from '@bufbuild/protobuf/wkt';
 import { SessionStateService } from '../../../../core/services/session-state.service';
 import { type Proposal, ProposalStatus } from '../../../../generated/proposal/v1/proposal_pb';
 
+/** Configuration for each proposal status display. */
+interface StatusConfig {
+  readonly label: string;
+  readonly icon: string;
+  readonly cssClass: string;
+}
+
+/** Lookup map for status display configuration. */
+const STATUS_CONFIG: Readonly<Record<ProposalStatus, StatusConfig>> = {
+  [ProposalStatus.APPROVED]: { label: 'Approved', icon: 'check_circle', cssClass: 'approved' },
+  [ProposalStatus.REJECTED]: { label: 'Rejected', icon: 'cancel', cssClass: 'rejected' },
+  [ProposalStatus.PENDING]: { label: 'Pending', icon: 'hourglass_empty', cssClass: 'pending' },
+  [ProposalStatus.UNSPECIFIED]: { label: 'Unknown', icon: 'help', cssClass: '' },
+};
+
 @Component({
   selector: 'app-history-panel',
   standalone: true,
@@ -23,55 +38,9 @@ import { type Proposal, ProposalStatus } from '../../../../generated/proposal/v1
 export class HistoryPanelComponent {
   readonly sessionState = inject(SessionStateService);
 
-  getStatusLabel(status: ProposalStatus): string {
-    switch (status) {
-      case ProposalStatus.APPROVED: {
-        return 'Approved';
-      }
-      case ProposalStatus.REJECTED: {
-        return 'Rejected';
-      }
-      case ProposalStatus.PENDING: {
-        return 'Pending';
-      }
-      default: {
-        return 'Unknown';
-      }
-    }
-  }
-
-  getStatusIcon(status: ProposalStatus): string {
-    switch (status) {
-      case ProposalStatus.APPROVED: {
-        return 'check_circle';
-      }
-      case ProposalStatus.REJECTED: {
-        return 'cancel';
-      }
-      case ProposalStatus.PENDING: {
-        return 'hourglass_empty';
-      }
-      default: {
-        return 'help';
-      }
-    }
-  }
-
-  getStatusClass(status: ProposalStatus): string {
-    switch (status) {
-      case ProposalStatus.APPROVED: {
-        return 'approved';
-      }
-      case ProposalStatus.REJECTED: {
-        return 'rejected';
-      }
-      case ProposalStatus.PENDING: {
-        return 'pending';
-      }
-      default: {
-        return '';
-      }
-    }
+  /** Get the full status configuration for a proposal status. */
+  getStatusConfig(status: ProposalStatus): StatusConfig {
+    return STATUS_CONFIG[status];
   }
 
   trackByProposalId(_index: number, proposal: Proposal): string {

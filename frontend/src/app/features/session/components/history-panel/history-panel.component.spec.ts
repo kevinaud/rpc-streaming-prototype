@@ -31,53 +31,33 @@ describe('HistoryPanelComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('getStatusLabel', () => {
-    it('should return "Approved" for APPROVED status', () => {
-      expect(component.getStatusLabel(ProposalStatus.APPROVED)).toBe('Approved');
+  describe('getStatusConfig', () => {
+    it('should return correct config for APPROVED status', () => {
+      const config = component.getStatusConfig(ProposalStatus.APPROVED);
+      expect(config.label).toBe('Approved');
+      expect(config.icon).toBe('check_circle');
+      expect(config.cssClass).toBe('approved');
     });
 
-    it('should return "Rejected" for REJECTED status', () => {
-      expect(component.getStatusLabel(ProposalStatus.REJECTED)).toBe('Rejected');
+    it('should return correct config for REJECTED status', () => {
+      const config = component.getStatusConfig(ProposalStatus.REJECTED);
+      expect(config.label).toBe('Rejected');
+      expect(config.icon).toBe('cancel');
+      expect(config.cssClass).toBe('rejected');
     });
 
-    it('should return "Pending" for PENDING status', () => {
-      expect(component.getStatusLabel(ProposalStatus.PENDING)).toBe('Pending');
+    it('should return correct config for PENDING status', () => {
+      const config = component.getStatusConfig(ProposalStatus.PENDING);
+      expect(config.label).toBe('Pending');
+      expect(config.icon).toBe('hourglass_empty');
+      expect(config.cssClass).toBe('pending');
     });
 
-    it('should return "Unknown" for UNSPECIFIED status', () => {
-      expect(component.getStatusLabel(ProposalStatus.UNSPECIFIED)).toBe('Unknown');
-    });
-  });
-
-  describe('getStatusIcon', () => {
-    it('should return check_circle for APPROVED', () => {
-      expect(component.getStatusIcon(ProposalStatus.APPROVED)).toBe('check_circle');
-    });
-
-    it('should return cancel for REJECTED', () => {
-      expect(component.getStatusIcon(ProposalStatus.REJECTED)).toBe('cancel');
-    });
-
-    it('should return hourglass_empty for PENDING', () => {
-      expect(component.getStatusIcon(ProposalStatus.PENDING)).toBe('hourglass_empty');
-    });
-
-    it('should return help for UNSPECIFIED', () => {
-      expect(component.getStatusIcon(ProposalStatus.UNSPECIFIED)).toBe('help');
-    });
-  });
-
-  describe('getStatusClass', () => {
-    it('should return approved class for APPROVED', () => {
-      expect(component.getStatusClass(ProposalStatus.APPROVED)).toBe('approved');
-    });
-
-    it('should return rejected class for REJECTED', () => {
-      expect(component.getStatusClass(ProposalStatus.REJECTED)).toBe('rejected');
-    });
-
-    it('should return pending class for PENDING', () => {
-      expect(component.getStatusClass(ProposalStatus.PENDING)).toBe('pending');
+    it('should return correct config for UNSPECIFIED status', () => {
+      const config = component.getStatusConfig(ProposalStatus.UNSPECIFIED);
+      expect(config.label).toBe('Unknown');
+      expect(config.icon).toBe('help');
+      expect(config.cssClass).toBe('');
     });
   });
 

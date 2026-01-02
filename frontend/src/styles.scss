@@ -1,6 +1,8 @@
 /* Angular Material Theme */
 @use '@angular/material' as mat;
 
+/* Self-hosted fonts loaded via angular.json styles array */
+
 // Include the common styles for Angular Material
 @include mat.core();
 

@@ -37,6 +37,32 @@ mat-card-content {
   border-left: 4px solid #3f51b5;
 }
 
+.submission-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  color: #c62828;
+
+  mat-icon:first-child {
+    flex-shrink: 0;
+  }
+
+  span {
+    flex: 1;
+    font-size: 0.875rem;
+  }
+
+  button {
+    flex-shrink: 0;
+    margin: -0.5rem -0.5rem -0.5rem 0;
+  }
+}
+
 .decision-actions {
   display: flex;
   gap: 1rem;

@@ -10,15 +10,25 @@
         <div class="proposal-text">{{ pending.text }}</div>
       </div>
 
+      @if (submissionError(); as error) {
+        <div class="submission-error">
+          <mat-icon>error</mat-icon>
+          <span>{{ error }}</span>
+          <button mat-icon-button (click)="dismissError()" aria-label="Dismiss error">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+
       <div class="decision-actions">
         <button
           mat-raised-button
           color="warn"
           class="reject-button"
           (click)="submitDecision(false)"
-          [disabled]="isSubmitting || !sessionState.isConnected()"
+          [disabled]="isSubmitting() || !sessionState.isConnected()"
         >
-          @if (isSubmitting) {
+          @if (isSubmitting()) {
             <mat-spinner diameter="20" />
           } @else {
             <span class="button-content">
@@ -33,9 +43,9 @@
           color="primary"
           class="approve-button"
           (click)="submitDecision(true)"
-          [disabled]="isSubmitting || !sessionState.isConnected()"
+          [disabled]="isSubmitting() || !sessionState.isConnected()"
         >
-          @if (isSubmitting) {
+          @if (isSubmitting()) {
             <mat-spinner diameter="20" />
           } @else {
             <span class="button-content">
